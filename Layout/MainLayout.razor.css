@@ -1,0 +1,16 @@
+.top-row {
+    margin: 1rem;
+    height: 3rem;
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.top-row > button {
+    margin-right: .5rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    width: 4rem;
+    height: 100%;
+}

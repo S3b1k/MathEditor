@@ -1,0 +1,9 @@
+<div class="text-field @(Field.IsSelected ? "selected" : "")" 
+     style="@Style"
+     @onpointerdown="HandlePointerDown">
+
+    <textarea @oninput="OnInput">@Field.Text</textarea>
+    
+    <div class="resize-handle"
+         @onpointerdown="StartResize"></div>
+</div>
