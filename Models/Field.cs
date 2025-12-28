@@ -9,8 +9,8 @@ public abstract class Field
     public double PosX { get; set; }
     public double PosY { get; set; }
 
-    public double Width { get; set; } = 200;
-    public double Height { get; set; } = 30;
+    public double Width { get; set; } = 151.2;
+    public double Height { get; set; } = 37.8;
 
     public bool IsSelected { get; set; }
     

@@ -1,7 +1,10 @@
 ﻿@page "/"
 @using MathEditor.Components
 @using MathEditor.Models
+@using MathEditor.Services
+
 @inject IJSRuntime JS
+@inject HomeCommands Commands;
 
 <div class="canvas-container"
      @onpointerdown="OnPointerDown"

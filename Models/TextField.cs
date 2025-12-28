@@ -6,6 +6,8 @@ public class TextField : Field
 {
     public string Text { get; set; } = "New text";
 
+    // TODO - Auto resizing to fit text
+    
     public override RenderFragment Render(double zoom, double panX, double panY)
     {
         return builder =>

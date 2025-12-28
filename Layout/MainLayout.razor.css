@@ -11,6 +11,6 @@
     margin-right: .5rem;
     border: 1px solid transparent;
     border-radius: 10px;
-    width: 4rem;
+    min-width: 4rem;
     height: 100%;
 }

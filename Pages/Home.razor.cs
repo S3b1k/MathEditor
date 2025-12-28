@@ -7,36 +7,49 @@ namespace MathEditor.Pages;
 
 public partial class Home : ComponentBase
 {
-    private const double BaseCellSize = 18.9;
+    #region Properties
+    private const double BaseCellSize = 37.8;
 
     private double _zoom = 1.0;
     private double _targetZoom = 1.0;
     private bool _zooming;
     private double _zoomMouseX, _zoomMouseY;
-
+    
     private double _panX;
     private double _panY;
     private bool _panning;
     private double _lastX, _lastY;
-    
     private double _velX; 
     private double _velY;
     
     private bool _isInteractingWithField;
+    #endregion
     
-    private List<Field> Fields { get; set; } = [];
+    private List<Field> Fields { get; } = [];
 
-    private static double Snap(double value, double gridSize)
+    
+    #region Helper Methods
+    private static double Snap(double value, double gridSize) => Math.Round(value / gridSize) * gridSize;
+
+    public void AddDefaultTextField() => Fields.Add(new TextField {PosX = 100, PosY = 100, Text = "Hello World"});
+    
+    private void DeselectFields()
     {
-        return Math.Round(value / gridSize) * gridSize;
+        foreach (var f in Fields)
+            f.IsSelected = false;
     }
+    #endregion
     
-
+    // Start
     protected override void OnInitialized()
     {
-        Fields.Add(new TextField {PosX = 100, PosY = 100, Text = "Hello World"});
+        Commands.OnCreateTextField += AddDefaultTextField;
+        
+        AddDefaultTextField();
     }
 
+    #region Events
+    
     private void OnPointerDown(PointerEventArgs e)
     {
         if (_isInteractingWithField)
@@ -155,86 +168,6 @@ public partial class Home : ComponentBase
         }
     }
     
-
-    [JSInvokable]
-    public void OnAnimationFrame()
-    {
-        const double speed = 0.15;
-        if (_zooming)
-        {
-            var oldZoom = _zoom;
-
-            _zoom = oldZoom + (_targetZoom - oldZoom) * speed;
-
-            if (Math.Abs(_zoom - _targetZoom) < 0.001f)
-            {
-                _zoom = _targetZoom;
-                _zooming = false;
-            }
-            
-            ApplyZoomAtCursor(oldZoom, _zoom);
-        }
-
-        if (!_panning && !_isInteractingWithField)
-        {
-            const double friction = 0.6f;
-
-            _panX += _velX;
-            _panY += _velY;
-
-            _velX *= friction;
-            _velY *= friction;
-
-            if (Math.Abs(_velX) < 0.01) _velX = 0;
-            if (Math.Abs(_velY) < 0.01) _velY = 0;
-        }
-        
-        StateHasChanged();
-    }
-    
-    private void ApplyZoomAtCursor(double oldZoom, double newZoom)
-    {
-        // Convert mouse position to world coords BEFORE zoom
-        var worldX = (_zoomMouseX - _panX) / oldZoom;
-        var worldY = (_zoomMouseY - _panY) / oldZoom;
-
-        // Convert world coords back AFTER zoom
-        _panX = _zoomMouseX - worldX * newZoom;
-        _panY = _zoomMouseY - worldY * newZoom;
-    }
-
-    
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await JS.InvokeVoidAsync(
-                "mathEditor.startRenderLoop",
-                DotNetObjectReference.Create(this)
-            );
-        }
-    }
-
-    private void DeselectFields()
-    {
-        foreach (var f in Fields)
-            f.IsSelected = false;
-    }
-    private void HandleFieldSelect(Field field)
-    {
-        _isInteractingWithField = true;
-        DeselectFields();
-        field.IsSelected = true;
-    }
-    private void HandleFieldDragStart(Field field)
-    {
-        _isInteractingWithField = true;
-        _panning = false; // stop canvas panning
-        _velX = 0;
-        _velY = 0;
-    }
-
-
     private void OnKeyDown(KeyboardEventArgs e)
     {
         var selected = Fields.Where(f => f.IsSelected).ToList();
@@ -257,5 +190,78 @@ public partial class Home : ComponentBase
         
         if(e.Key == "1")
             Fields.Add(new TextField());
+    }
+    
+    #endregion
+    
+    
+    private void ApplyZoomAtCursor(double oldZoom, double newZoom)
+    {
+        var worldX = (_zoomMouseX - _panX) / oldZoom;
+        var worldY = (_zoomMouseY - _panY) / oldZoom;
+
+        _panX = _zoomMouseX - worldX * newZoom;
+        _panY = _zoomMouseY - worldY * newZoom;
+    }
+    private void HandleFieldSelect(Field field)
+    {
+        _isInteractingWithField = true;
+        DeselectFields();
+        field.IsSelected = true;
+    }
+    private void HandleFieldDragStart(Field field)
+    {
+        _isInteractingWithField = true;
+        _panning = false;
+        _velX = 0;
+        _velY = 0;
+    }
+    
+    
+    [JSInvokable]
+    public void OnAnimationFrame()
+    {
+        const double speed = 0.15;
+        if (_zooming)
+        {
+            var oldZoom = _zoom;
+
+            _zoom = oldZoom + (_targetZoom - oldZoom) * speed;
+
+            if (Math.Abs(_zoom - _targetZoom) < 0.001f)
+            {
+                _zoom = _targetZoom;
+                _zooming = false;
+            }
+            
+            ApplyZoomAtCursor(oldZoom, _zoom);
+        }
+
+        if (!_panning && !_isInteractingWithField)
+        {
+            const double friction = 0.7f;
+
+            _panX += _velX;
+            _panY += _velY;
+
+            _velX *= friction;
+            _velY *= friction;
+
+            if (Math.Abs(_velX) < 0.01) _velX = 0;
+            if (Math.Abs(_velY) < 0.01) _velY = 0;
+        }
+        
+        StateHasChanged();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync(
+                "mathEditor.startRenderLoop",
+                DotNetObjectReference.Create(this)
+            );
+        }
     }
 }

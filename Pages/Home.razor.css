@@ -7,7 +7,6 @@
 }
 
 .grid {
-    /* Defaults (also silence IDE warnings) */
     --cell-size: 10px;
     --pan-x: 0px;
     --pan-y: 0px;
@@ -17,32 +16,27 @@
     background-color: #ffffff;
 
     background-image:
-        /* Major vertical lines */
             linear-gradient(
                     to right,
                     rgba(0, 0, 0, 0.15) 1px,
                     transparent 1px
             ),
-                /* Major horizontal lines */
             linear-gradient(
                     to bottom,
                     rgba(0, 0, 0, 0.15) 1px,
                     transparent 1px
             ),
-                /* Minor vertical lines */
             linear-gradient(
                     to right,
                     rgba(0, 0, 0, 0.1) 1px,
                     transparent 1px
             ),
-                /* Minor horizontal lines */
             linear-gradient(
                     to bottom,
                     rgba(0, 0, 0, 0.1) 1px,
                     transparent 1px
             );
 
-    /* 5×5 cells for major grid */
     background-size:
             calc(var(--cell-size) * 5) calc(var(--cell-size) * 5),
             calc(var(--cell-size) * 5) calc(var(--cell-size) * 5),

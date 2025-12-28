@@ -6,7 +6,7 @@ namespace MathEditor.Components;
 
 public partial class TextFieldView : ComponentBase
 {
-    [Parameter] public TextField Field { get; set; }
+    [Parameter] public required TextField Field { get; set; }
     [Parameter] public double Zoom { get; set; }
     [Parameter] public double PanX { get; set; }
     [Parameter] public double PanY { get; set; }
@@ -31,16 +31,13 @@ public partial class TextFieldView : ComponentBase
     
     private void HandlePointerDown(PointerEventArgs e)
     {
-        if (Field.IsSelected)
-        {
-            Field.IsDragging = true;
-            Field.DragOffsetX = (e.ClientX - (Field.PosX * Zoom + PanX)) / Zoom;
-            Field.DragOffsetY = (e.ClientY - (Field.PosY * Zoom + PanY)) / Zoom;
+        Field.IsDragging = true;
+        Field.DragOffsetX = (e.ClientX - (Field.PosX * Zoom + PanX)) / Zoom;
+        Field.DragOffsetY = (e.ClientY - (Field.PosY * Zoom + PanY)) / Zoom;
 
-            OnStartDrag.InvokeAsync(Field);
-        }
-        else
-            OnSelect.InvokeAsync(Field);
+        OnStartDrag.InvokeAsync(Field);
+        
+        OnSelect.InvokeAsync(Field);
     }
     
     private void StartResize(PointerEventArgs e)
