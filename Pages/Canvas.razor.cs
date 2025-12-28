@@ -1,3 +1,4 @@
+using System.Globalization;
 using MathEditor.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -5,11 +6,18 @@ using Microsoft.JSInterop;
 
 namespace MathEditor.Pages;
 
-public partial class Home : ComponentBase
+public partial class Canvas : ComponentBase
 {
     #region Properties
-    private const double BaseCellSize = 37.8;
 
+    private string GridStyle =>
+        $"--cell-size: {(BaseCellSize * _zoom).ToString(CultureInfo.InvariantCulture)}px;" +
+        $"--pan-x: {_panX.ToString(CultureInfo.InvariantCulture)}px; " +
+        $"--pan-y: {_panY.ToString(CultureInfo.InvariantCulture)}px; ";
+
+    
+    private const double BaseCellSize = 37.8;
+    
     private double _zoom = 1.0;
     private double _targetZoom = 1.0;
     private bool _zooming;

@@ -4,7 +4,7 @@
 @using MathEditor.Services
 
 @inject IJSRuntime JS
-@inject HomeCommands Commands;
+@inject CanvasCommands Commands;
 
 <div class="canvas-container"
      @onpointerdown="OnPointerDown"
@@ -15,11 +15,7 @@
      @onkeydown="OnKeyDown">
 
     <div class="grid"
-         style="
-            --cell-size:@(BaseCellSize * _zoom)px;
-            --pan-x:@(_panX)px;
-            --pan-y:@(_panY)px;
-         ">
+         style="@GridStyle">
     </div>
     
     @foreach (var field in Fields)

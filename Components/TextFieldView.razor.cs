@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MathEditor.Models;
@@ -15,12 +16,12 @@ public partial class TextFieldView : ComponentBase
 
     private string Style =>
         $"position:absolute;" +
-        $"left:{Field.PosX * Zoom + PanX}px;" +
-        $"top:{Field.PosY * Zoom + PanY}px;" +
-        $"transform:scale({Zoom});" +
+        $"left:{(Field.PosX * Zoom + PanX).ToString(CultureInfo.InvariantCulture)}px;" +
+        $"top:{(Field.PosY * Zoom + PanY).ToString(CultureInfo.InvariantCulture)}px;" +
+        $"transform:scale({Zoom.ToString(CultureInfo.InvariantCulture)});" +
         $"transform-origin:top left;" +
-        $"width:{Field.Width}px;" +
-        $"height:{Field.Height}px;";
+        $"width:{Field.Width.ToString(CultureInfo.InvariantCulture)}px;" +
+        $"height:{Field.Height.ToString(CultureInfo.InvariantCulture)}px;";
 
     
     private void OnInput(ChangeEventArgs e)

@@ -1,6 +1,6 @@
 namespace MathEditor.Services;
 
-public class HomeCommands
+public class CanvasCommands
 {
     public event Action? OnCreateTextField;
     
