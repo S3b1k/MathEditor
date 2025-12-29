@@ -31,67 +31,71 @@ public partial class Canvas : ComponentBase
     private double _velX; 
     private double _velY;
     
+    // Fields
     private bool _isInteractingWithField;
-    
-    #endregion
-    
     private List<Field> Fields { get; } = [];
     private readonly List<Field> _selectedFields = [];
+    
+    #endregion
 
     
     #region Helper Methods
-    private static double Snap(double value, double gridSize) => Math.Round(value / gridSize) * gridSize;
+    
+    private static double Snap(double value) => Math.Round(value / BaseCellSize) * BaseCellSize;
+    public static double ExpandSnap(double value) => Math.Ceiling(value / BaseCellSize) * BaseCellSize;
+    
+    #endregion
+    
+    
+    #region Editor
 
-    public void AddDefaultTextField() => Fields.Add(new TextField {PosX = 100, PosY = 100, Text = "Hello World"});
-
-
-    private void SelectField(Field field)
+    private void CreateTextField(double x, double y)
     {
-        if (field.IsSelected)
-        {
-            if (field is TextField tf)
-                tf.TextSelected = true;
-            else
-                DeselectField(field);
-        }
-        else
-        {
-            field.IsSelected = true;
-            _selectedFields.Add(field);
-        }
+        Fields.Add(new TextField(x, y));
     }
-    private void DeselectField(Field field)
-    {
-        field.IsSelected = false;
-        _selectedFields.Remove(field);
 
-        if (field is TextField tf)
-            tf.TextSelected = false;
-    }
-    private void DeselectAllFields()
+    private void CreateMathField(double x, double y)
     {
-        var fields = _selectedFields.ToArray();
-        foreach (var f in fields)
-            DeselectField(f);
+        CreateTextField(x, y);
     }
+    
     #endregion
     
     
     protected override void OnInitialized()
     {
-        Commands.OnCreateTextField += AddDefaultTextField;
         
-        AddDefaultTextField();
     }
-
+    
     #region Events
     
     private void OnPointerDown(PointerEventArgs e)
     {
         if (_isInteractingWithField)
             return;
-        
-        if (e.Button == 1 || e.PointerType == "touch")
+
+        if (e.Button == 0)
+        {
+            var worldX = (e.ClientX - _panX) / _zoom;
+            var worldY =  (e.ClientY - _panY) / _zoom;
+            
+            switch (Editor.Mode)
+            {
+                case EditorMode.CreateTextField:
+                    CreateTextField(worldX, worldY);
+                    Editor.SetMode(EditorMode.Idle);
+                    break;
+                case EditorMode.CreateMathField:
+                    CreateMathField(worldX, worldY);
+                    Editor.SetMode(EditorMode.Idle);
+                    break;
+                default: 
+                    DeselectAllFields();
+                    break;
+            }
+            
+        }
+        else if (e.Button == 1 || e.PointerType == "touch")
         {
             _panning = true;
             _lastX = e.ClientX;
@@ -100,8 +104,6 @@ public partial class Canvas : ComponentBase
             _velX = 0;
             _velY = 0;
         }
-        else if (e.Button == 0)
-            DeselectAllFields();
     }
 
     private void OnPointerMove(PointerEventArgs e)
@@ -133,12 +135,12 @@ public partial class Canvas : ComponentBase
 
                 if (!e.CtrlKey)
                 {
-                    newWidth = Snap(newWidth, BaseCellSize);
-                    newHeight = Snap(newHeight, BaseCellSize);
+                    newWidth = Snap(newWidth);
+                    newHeight = Snap(newHeight);
                 }
                 
-                field.Width = Math.Max(50, newWidth);
-                field.Height = Math.Max(20, newHeight);
+                field.Width = Math.Max(BaseCellSize, newWidth);
+                field.Height = Math.Max(BaseCellSize, newHeight);
             }
             else if (field.IsDragging)
             {
@@ -150,8 +152,8 @@ public partial class Canvas : ComponentBase
                 
                 if (!e.CtrlKey)
                 {
-                    worldX = Snap(worldX, BaseCellSize);
-                    worldY = Snap(worldY, BaseCellSize);
+                    worldX = Snap(worldX);
+                    worldY = Snap(worldY);
                 }
 
                 field.PosX = worldX;
@@ -202,6 +204,9 @@ public partial class Canvas : ComponentBase
 
             foreach (var field in _selectedFields)
             {
+                if (field is TextField { TextSelected: true })
+                    break;
+                
                 switch (e.Key)
                 {
                     case "ArrowUp": field.PosY -= step; break;
@@ -218,6 +223,27 @@ public partial class Canvas : ComponentBase
     
     
     #region field handling
+    private void SelectField(Field field)
+    {
+        if (field.IsSelected) return;
+        field.IsSelected = true;
+        _selectedFields.Add(field);
+    }
+    private void DeselectField(Field field)
+    {
+        field.IsSelected = false;
+        _selectedFields.Remove(field);
+
+        if (field is TextField tf)
+            tf.TextSelected = false;
+    }
+    private void DeselectAllFields()
+    {
+        var fields = _selectedFields.ToArray();
+        foreach (var f in fields)
+            DeselectField(f);
+    }
+    
     private void HandleFieldSelect((Field field, bool shift) data)
     {
         var (field, shift) = data;
@@ -250,7 +276,6 @@ public partial class Canvas : ComponentBase
         _panX = _zoomMouseX - worldX * newZoom;
         _panY = _zoomMouseY - worldY * newZoom;
     }
-    
     
     [JSInvokable]
     public void OnAnimationFrame()
@@ -288,14 +313,29 @@ public partial class Canvas : ComponentBase
         StateHasChanged();
     }
     
+    [JSInvokable]
+    public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
+    {
+        Console.WriteLine($"{key} was pressed");
+
+        if (_selectedFields.Count == 0)
+        {
+            switch (key)
+            {
+                case "t":
+                    Editor.SetMode(EditorMode.CreateTextField);
+                    break;
+            }
+        }
+    }
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync(
-                "mathEditor.startRenderLoop",
-                DotNetObjectReference.Create(this)
-            );
+            var dotnetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("mathEditor.startRenderLoop", dotnetRef);
+            await JS.InvokeVoidAsync("keyboardActions.register", dotnetRef);
         }
     }
 }

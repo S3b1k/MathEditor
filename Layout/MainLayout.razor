@@ -1,14 +1,10 @@
-﻿@inject CanvasCommands Commands;
-
+﻿@using MathEditor.Components
 @using MathEditor.Services
 @inherits LayoutComponentBase
 <div class="page">
     <main>
-        <div class="top-row">
-            <button @onclick="Commands.CreateTextField">New Text Field</button>
-            <button @onclick="Commands.CreateTextField">New Expression</button>
-        </div>
-
+        <Toolbar />
+        
         <article>
             @Body
         </article>

@@ -8,7 +8,7 @@ public abstract class Field
     
     public double PosX { get; set; }
     public double PosY { get; set; }
-
+    
     public double Width { get; set; } = Canvas.BaseCellSize * 6;
     public double Height { get; set; } = Canvas.BaseCellSize;
 

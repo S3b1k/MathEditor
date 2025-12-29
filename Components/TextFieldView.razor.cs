@@ -15,6 +15,10 @@ public partial class TextFieldView : ComponentBase
     [Parameter] public double PanY { get; set; }
     [Parameter] public EventCallback<(Field field, bool shift)> OnSelect { get; set; }
     [Parameter] public EventCallback<Field> OnStartDrag { get; set; }
+
+    private ElementReference _content;
+
+    private bool _clickingText;
     
     private string Style =>
         $"position:absolute;" +
@@ -25,26 +29,25 @@ public partial class TextFieldView : ComponentBase
         $"width:{Field.Width.ToString(CultureInfo.InvariantCulture)}px;" +
         $"height:{Field.Height.ToString(CultureInfo.InvariantCulture)}px;";
 
-    private ElementReference _textarea;
     
-    private async void OnInput(ChangeEventArgs e)
+    private async Task OnInput(ChangeEventArgs e)
     {
-        Field.Text = e.Value?.ToString() ?? "";
+        Field.Text = await JS.InvokeAsync<string>("textField.getText", _content);
+        
+        var height = await JS.InvokeAsync<double>("textField.getHeight", _content);
+        var width = await JS.InvokeAsync<double>("textField.getWidth", _content);
 
-        var pxHeight = await JS.InvokeAsync<double>("measureTextArea", _textarea);
+        Field.Height = Canvas.ExpandSnap(height);
+        Field.Width = Canvas.ExpandSnap(width);
         
-        var worldHeight = pxHeight / Zoom;
-        
-        worldHeight = Math.Ceiling(worldHeight / Canvas.BaseCellSize) * Canvas.BaseCellSize;
-        
-        Field.Height = Math.Max(Canvas.BaseCellSize, worldHeight);
-        
-        await InvokeAsync(StateHasChanged);
+        Console.WriteLine(Field.Text);
     }
-
+    
     
     private async Task HandlePointerDown(PointerEventArgs e)
     {
+        if (!_clickingText)
+            Field.TextSelected = false;
         Field.IsDragging = true;
         
         Field.DragOffsetX = (e.ClientX - (Field.PosX * Zoom + PanX)) / Zoom;
@@ -53,6 +56,13 @@ public partial class TextFieldView : ComponentBase
         await OnStartDrag.InvokeAsync(Field);
         await OnSelect.InvokeAsync((Field, e.ShiftKey));
     }
+
+    private void SelectText()
+    {
+        _clickingText = true;
+        Field.TextSelected = true;
+    }
+    private void StopClickText() => _clickingText = false;
     
     private void StartResize(PointerEventArgs e)
     {
@@ -62,5 +72,11 @@ public partial class TextFieldView : ComponentBase
         Field.ResizeStartX = e.ClientX;
         Field.ResizeStartY = e.ClientY;
     }
-
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await JS.InvokeVoidAsync("textField.setText", _content, Field.Text);
+    }
 }

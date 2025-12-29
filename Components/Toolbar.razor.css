@@ -1,0 +1,21 @@
+.toolbar {
+    position: absolute;
+    z-index: 1000;
+    margin: 1rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.tool-button {
+    margin-right: .5rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    min-width: 4rem;
+    height: 100%;
+}
+
+.tool-button.active {
+    background: darkgray;
+}

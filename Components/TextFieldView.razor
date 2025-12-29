@@ -4,9 +4,13 @@
      style="@Style"
      @onpointerdown="HandlePointerDown">
 
-    @*TODO - Block dragging when clicking inside text field*@
-    <textarea @ref="_textarea" @oninput="OnInput">@Field.Text</textarea>
-
+    <div class="text-content" 
+         contenteditable="true"
+         @oninput="OnInput"
+         @onpointerdown="SelectText"
+         @onpointerup="StopClickText"
+         @ref="_content"></div>
+    
     @*TODO - Add resizing from all corners and edges like in Excalidraw*@
     <div class="resize-handle"
          @onpointerdown="StartResize"></div>

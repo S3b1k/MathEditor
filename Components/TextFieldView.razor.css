@@ -1,33 +1,31 @@
 .text-field {
     position: absolute;
     background: none;
-    min-height: 18.9px;
-    min-width: 37.8px;
     cursor: grab;
+    display: inline-block;
 }
-.text-field > textarea {
-    pointer-events: none;
-    background: none;
-    border: none;
-    outline: none;
-    width: 100%;
-    height: 100%;
-    resize: none;
-    font-size: 11pt;
-    overflow: hidden;
-    padding: 0;
-}
-
 .text-field.selected {
     outline: 3px solid #4a90e2;
     border-radius: 3px;
     outline-offset: 2px;
 }
-.text-field.selected > textarea{
-    pointer-events: auto;
+
+.text-content {
+    /*Block pointer events if unselected*/
+    pointer-events: none;
+    
+    /*Formatting*/
+    font-size: 11pt;
+    line-height: 1.5;
+    
+    width: 100%;
+    overflow: hidden;
+    white-space: pre-wrap;
+    outline: none;
 }
-.text-field.selected > .resize-handle {
-    visibility: visible;
+.text-field.selected > .text-content {
+    pointer-events: auto;
+    cursor: text;
 }
 
 
@@ -40,4 +38,12 @@
     background: #888;
     position: absolute;
     cursor: se-resize;
+}
+.text-field.selected > .resize-handle {
+    visibility: visible;
+}
+
+
+.cursor {
+    position: absolute;
 }

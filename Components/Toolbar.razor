@@ -1,0 +1,25 @@
+@using MathEditor.Models
+@using MathEditor.Services
+@implements IDisposable;
+@inject EditorState Editor;
+
+<div class="toolbar">
+        <button class="tool-button @(Editor.Mode == EditorMode.CreateTextField ? "active" : "")" 
+                @onclick="() => Editor.SetMode(EditorMode.CreateTextField)">New Text</button>
+        <button class="tool-button @(Editor.Mode == EditorMode.CreateMathField ? "active" : "")" 
+                @onclick="() => Editor.SetMode(EditorMode.CreateMathField)">New Expression</button>
+</div>
+
+
+@code {
+        protected override void OnInitialized()
+        {
+                Editor.OnChange += StateHasChanged;
+        }
+
+        public void Dispose()
+        {
+                Editor.OnChange -= StateHasChanged;
+        }
+
+}

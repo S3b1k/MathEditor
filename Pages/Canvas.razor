@@ -4,9 +4,9 @@
 @using MathEditor.Services
 
 @inject IJSRuntime JS
-@inject CanvasCommands Commands;
+@inject EditorState Editor;
 
-<div class="canvas-container"
+<div class="canvas-container" tabindex="0"
      @onpointerdown="OnPointerDown"
      @onpointermove="OnPointerMove"
      @onpointerup="OnPointerUp"
@@ -17,6 +17,8 @@
     <div class="grid"
          style="@GridStyle">
     </div>
+    
+    <div class="cursor">+</div>
     
     @foreach (var field in Fields)
     {
