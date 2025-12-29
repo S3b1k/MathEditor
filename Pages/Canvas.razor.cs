@@ -14,15 +14,16 @@ public partial class Canvas : ComponentBase
         $"--cell-size: {(BaseCellSize * _zoom).ToString(CultureInfo.InvariantCulture)}px;" +
         $"--pan-x: {_panX.ToString(CultureInfo.InvariantCulture)}px; " +
         $"--pan-y: {_panY.ToString(CultureInfo.InvariantCulture)}px; ";
-
     
-    private const double BaseCellSize = 37.8;
+    public const double BaseCellSize = 18.9;
     
-    private double _zoom = 1.0;
+    // Zooming
+    private double _zoom = 0.5;
     private double _targetZoom = 1.0;
     private bool _zooming;
     private double _zoomMouseX, _zoomMouseY;
     
+    // Panning
     private double _panX;
     private double _panY;
     private bool _panning;
@@ -31,24 +32,51 @@ public partial class Canvas : ComponentBase
     private double _velY;
     
     private bool _isInteractingWithField;
+    
     #endregion
     
     private List<Field> Fields { get; } = [];
+    private readonly List<Field> _selectedFields = [];
 
     
     #region Helper Methods
     private static double Snap(double value, double gridSize) => Math.Round(value / gridSize) * gridSize;
 
     public void AddDefaultTextField() => Fields.Add(new TextField {PosX = 100, PosY = 100, Text = "Hello World"});
-    
-    private void DeselectFields()
+
+
+    private void SelectField(Field field)
     {
-        foreach (var f in Fields)
-            f.IsSelected = false;
+        if (field.IsSelected)
+        {
+            if (field is TextField tf)
+                tf.TextSelected = true;
+            else
+                DeselectField(field);
+        }
+        else
+        {
+            field.IsSelected = true;
+            _selectedFields.Add(field);
+        }
+    }
+    private void DeselectField(Field field)
+    {
+        field.IsSelected = false;
+        _selectedFields.Remove(field);
+
+        if (field is TextField tf)
+            tf.TextSelected = false;
+    }
+    private void DeselectAllFields()
+    {
+        var fields = _selectedFields.ToArray();
+        foreach (var f in fields)
+            DeselectField(f);
     }
     #endregion
     
-    // Start
+    
     protected override void OnInitialized()
     {
         Commands.OnCreateTextField += AddDefaultTextField;
@@ -73,9 +101,7 @@ public partial class Canvas : ComponentBase
             _velY = 0;
         }
         else if (e.Button == 0)
-        {
-            DeselectFields();
-        }
+            DeselectAllFields();
     }
 
     private void OnPointerMove(PointerEventArgs e)
@@ -95,7 +121,7 @@ public partial class Canvas : ComponentBase
             _lastY = e.ClientY;
         }
 
-        foreach (var field in Fields)
+        foreach (var field in _selectedFields)
         {
             if (field.IsResizing)
             {
@@ -116,19 +142,11 @@ public partial class Canvas : ComponentBase
             }
             else if (field.IsDragging)
             {
+                if (field is TextField { TextSelected: true })
+                    continue;
+                
                 var worldX = (e.ClientX - _panX) / _zoom - field.DragOffsetX;
                 var worldY = (e.ClientY - _panY) / _zoom - field.DragOffsetY;
-
-                if (e.ShiftKey)
-                {
-                    var dx = Math.Abs(worldX - field.PosX);
-                    var dy = Math.Abs(worldY - field.PosY);
-
-                    if (dx > dy)
-                        worldY = field.PosY;
-                    else
-                        worldX = field.PosX;
-                }
                 
                 if (!e.CtrlKey)
                 {
@@ -161,7 +179,7 @@ public partial class Canvas : ComponentBase
         {
             const double zoomSpeed = 0.002;
             var zoomFactor = 1 - e.DeltaY * zoomSpeed;
-            _targetZoom = Math.Clamp(_targetZoom * zoomFactor, 0.2, 5.0);
+            _targetZoom = Math.Clamp(_targetZoom * zoomFactor, .5, 5);
 
             _zoomMouseX = e.ClientX;
             _zoomMouseY = e.ClientY;
@@ -178,12 +196,11 @@ public partial class Canvas : ComponentBase
     
     private void OnKeyDown(KeyboardEventArgs e)
     {
-        var selected = Fields.Where(f => f.IsSelected).ToList();
-        if (selected.Count > 0)
+        if (_selectedFields.Count > 0)
         {
             var step = e.CtrlKey ? 1 : BaseCellSize;
 
-            foreach (var field in selected)
+            foreach (var field in _selectedFields)
             {
                 switch (e.Key)
                 {
@@ -195,11 +212,33 @@ public partial class Canvas : ComponentBase
                 }
             }   
         }
-        
-        if(e.Key == "1")
-            Fields.Add(new TextField());
     }
     
+    #endregion
+    
+    
+    #region field handling
+    private void HandleFieldSelect((Field field, bool shift) data)
+    {
+        var (field, shift) = data;
+        
+        _isInteractingWithField = true;
+        
+        if (!shift && !field.IsSelected)
+            DeselectAllFields();
+        
+        SelectField(field);
+    }
+    
+    private void HandleFieldDragStart(Field field)
+    {
+        if (field is TextField { TextSelected: true })
+            return;
+        _isInteractingWithField = true;
+        _panning = false;
+        _velX = 0;
+        _velY = 0;
+    }
     #endregion
     
     
@@ -210,19 +249,6 @@ public partial class Canvas : ComponentBase
 
         _panX = _zoomMouseX - worldX * newZoom;
         _panY = _zoomMouseY - worldY * newZoom;
-    }
-    private void HandleFieldSelect(Field field)
-    {
-        _isInteractingWithField = true;
-        DeselectFields();
-        field.IsSelected = true;
-    }
-    private void HandleFieldDragStart(Field field)
-    {
-        _isInteractingWithField = true;
-        _panning = false;
-        _velX = 0;
-        _velY = 0;
     }
     
     

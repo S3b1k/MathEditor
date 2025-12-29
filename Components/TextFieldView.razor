@@ -1,9 +1,11 @@
+@inject IJSRuntime JS
+
 <div class="text-field @(Field.IsSelected ? "selected" : "")" 
      style="@Style"
      @onpointerdown="HandlePointerDown">
 
     @*TODO - Block dragging when clicking inside text field*@
-    <textarea @oninput="OnInput">@Field.Text</textarea>
+    <textarea @ref="_textarea" @oninput="OnInput">@Field.Text</textarea>
 
     @*TODO - Add resizing from all corners and edges like in Excalidraw*@
     <div class="resize-handle"

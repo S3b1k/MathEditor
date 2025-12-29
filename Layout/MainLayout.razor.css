@@ -3,6 +3,7 @@
     height: 3rem;
     display: flex;
     position: absolute;
+    z-index: 1;
     align-items: center;
     justify-content: flex-start;
 }

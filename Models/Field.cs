@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+using MathEditor.Pages;
 
 namespace MathEditor.Models;
 
@@ -9,8 +9,8 @@ public abstract class Field
     public double PosX { get; set; }
     public double PosY { get; set; }
 
-    public double Width { get; set; } = 151.2;
-    public double Height { get; set; } = 37.8;
+    public double Width { get; set; } = Canvas.BaseCellSize * 6;
+    public double Height { get; set; } = Canvas.BaseCellSize;
 
     public bool IsSelected { get; set; }
     
