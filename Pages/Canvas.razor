@@ -18,20 +18,20 @@
          style="@GridStyle">
     </div>
     
-    <div class="cursor">+</div>
-    
-    @foreach (var field in Fields)
-    {
-        if (field is TextField tf)
+    <div class="camera" style="@CameraStyle">
+        @foreach (var field in Fields)
         {
-            <TextFieldView Field="tf"
-                           Zoom="_zoom"
-                           PanX="_panX"
-                           PanY="_panY" 
-                           OnSelect="HandleFieldSelect"
-                           OnStartDrag="HandleFieldDragStart"/>
+            if (field is TextField tf)
+            {
+                <TextFieldView Field="tf"
+                               Zoom="_zoom"
+                               PanX="_panX"
+                               PanY="_panY" 
+                               OnSelect="HandleFieldSelect"
+                               OnStartDrag="HandleFieldDragStart"/>
+            }
         }
-    }
+    </div>
     
     @if (_isSelecting || _isFadingSelection)
     {

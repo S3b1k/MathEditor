@@ -1,5 +1,6 @@
 using System.Globalization;
 using MathEditor.Models;
+using MathEditor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -9,13 +10,36 @@ namespace MathEditor.Pages;
 public partial class Canvas : ComponentBase
 {
     #region Properties
-
     
     #region styles
-    private string GridStyle =>
-        $"--cell-size: {(BaseCellSize * _zoom).ToString(CultureInfo.InvariantCulture)}px;" +
-        $"--pan-x: {_panX.ToString(CultureInfo.InvariantCulture)}px; " +
-        $"--pan-y: {_panY.ToString(CultureInfo.InvariantCulture)}px; ";
+
+    private string GridStyle
+    {
+        get
+        {
+            var scaledCell = BaseCellSize * _zoom;
+
+            var offsetX = _panX % scaledCell;
+            var offsetY = _panY % scaledCell;
+
+            if (offsetX < 0) offsetX += scaledCell;
+            if (offsetY < 0) offsetY += scaledCell;
+            
+            return 
+                $"--cell-size: {scaledCell.ToString(CultureInfo.InvariantCulture)}px;" +
+                $"--pan-x: {_panX.ToString(CultureInfo.InvariantCulture)}px; " +
+                $"--pan-y: {_panY.ToString(CultureInfo.InvariantCulture)}px; ";
+        }
+    }
+
+    
+    // ***
+    private string CameraStyle =>
+        "position: absolute;" +
+        "left: 0;" +
+        "top: 0;" +
+        $"transform: translate({_panX}px, {_panY}px) scale({_zoom});" +
+        "transform-origin: 0 0;";
     
     private string SelectionBoxStyle =>
         $"left:{Math.Min(_selectStartX, _selectCurrentX).ToString(CultureInfo.InvariantCulture)}px;" +
