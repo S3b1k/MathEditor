@@ -6,21 +6,17 @@ public class EditorState
 {
     public event Action? OnChange;
 
-    private EditorMode _mode = EditorMode.Idle;
     public EditorMode Mode
     {
-        get => _mode;
+        get;
         private set
         {
-            _mode = value;
+            field = value;
             NotifyStateChanged();
         }
-    }
+    } = EditorMode.Idle;
 
-    public void SetMode(EditorMode mode)
-    {
-        Mode = mode;
-    }
+    public void SetMode(EditorMode mode) => Mode = mode;
 
     private void NotifyStateChanged() => OnChange?.Invoke();
 }

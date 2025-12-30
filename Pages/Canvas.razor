@@ -14,7 +14,7 @@
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown">
 
-    <div class="grid"
+    <div class="grid @(Editor.Mode == EditorMode.Pan ? _panning ? "panning" : "pan" : "")"
          style="@GridStyle">
     </div>
     
@@ -31,5 +31,12 @@
                            OnSelect="HandleFieldSelect"
                            OnStartDrag="HandleFieldDragStart"/>
         }
+    }
+    
+    @if (_isSelecting || _isFadingSelection)
+    {
+        <div class="selection-box @(_isFadingSelection ? "fade-out" : "")"
+             style="@SelectionBoxStyle">
+        </div>
     }
 </div>

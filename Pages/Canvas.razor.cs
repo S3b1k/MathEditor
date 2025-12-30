@@ -10,10 +10,19 @@ public partial class Canvas : ComponentBase
 {
     #region Properties
 
+    
+    #region styles
     private string GridStyle =>
         $"--cell-size: {(BaseCellSize * _zoom).ToString(CultureInfo.InvariantCulture)}px;" +
         $"--pan-x: {_panX.ToString(CultureInfo.InvariantCulture)}px; " +
         $"--pan-y: {_panY.ToString(CultureInfo.InvariantCulture)}px; ";
+    
+    private string SelectionBoxStyle =>
+        $"left:{Math.Min(_selectStartX, _selectCurrentX).ToString(CultureInfo.InvariantCulture)}px;" +
+        $"top:{Math.Min(_selectStartY, _selectCurrentY).ToString(CultureInfo.InvariantCulture)}px;" +
+        $"width:{Math.Abs(_selectCurrentX - _selectStartX).ToString(CultureInfo.InvariantCulture)}px;" +
+        $"height:{Math.Abs(_selectCurrentY - _selectStartY).ToString(CultureInfo.InvariantCulture)}px;";
+    #endregion
     
     public const double BaseCellSize = 18.9;
     
@@ -36,6 +45,15 @@ public partial class Canvas : ComponentBase
     private List<Field> Fields { get; } = [];
     private readonly List<Field> _selectedFields = [];
     
+    // Selecting
+    private bool _isSelecting;
+    private bool _isFadingSelection;
+    private double _selectStartX, _selectStartY;
+    private double _selectCurrentX, _selectCurrentY;
+    
+    // Editor
+    private EditorMode _previousMode = EditorMode.Idle;
+    
     #endregion
 
     
@@ -43,16 +61,23 @@ public partial class Canvas : ComponentBase
     
     private static double Snap(double value) => Math.Round(value / BaseCellSize) * BaseCellSize;
     public static double ExpandSnap(double value) => Math.Ceiling(value / BaseCellSize) * BaseCellSize;
-    
+
+    private void StartPan(PointerEventArgs e)
+    {
+        Editor.SetMode(EditorMode.Pan);
+        _panning = true;
+            
+        _lastX = e.ClientX;
+        _lastY = e.ClientY;
+        _velX = 0;
+        _velY = 0;
+    }
     #endregion
     
     
     #region Editor
 
-    private void CreateTextField(double x, double y)
-    {
-        Fields.Add(new TextField(x, y));
-    }
+    private void CreateTextField(double x, double y) => Fields.Add(new TextField(x, y));
 
     private void CreateMathField(double x, double y)
     {
@@ -62,10 +87,10 @@ public partial class Canvas : ComponentBase
     #endregion
     
     
-    protected override void OnInitialized()
-    {
-        
-    }
+    // protected override void OnInitialized()
+    // {
+    //     
+    // }
     
     #region Events
     
@@ -81,6 +106,10 @@ public partial class Canvas : ComponentBase
             
             switch (Editor.Mode)
             {
+                case EditorMode.Pan:
+                    _previousMode = EditorMode.Pan;
+                    StartPan(e);
+                    break;
                 case EditorMode.CreateTextField:
                     CreateTextField(worldX, worldY);
                     Editor.SetMode(EditorMode.Idle);
@@ -91,24 +120,26 @@ public partial class Canvas : ComponentBase
                     break;
                 default: 
                     DeselectAllFields();
+                    
+                    _isSelecting = true;
+                    _selectStartX = e.ClientX;
+                    _selectStartY = e.ClientY;
+                    _selectCurrentX = e.ClientX;
+                    _selectCurrentY = e.ClientY;
                     break;
             }
             
         }
         else if (e.Button == 1 || e.PointerType == "touch")
         {
-            _panning = true;
-            _lastX = e.ClientX;
-            _lastY = e.ClientY;
-
-            _velX = 0;
-            _velY = 0;
+            _previousMode = Editor.Mode;
+            StartPan(e);
         }
     }
 
     private void OnPointerMove(PointerEventArgs e)
     {
-        if (_panning)
+        if (Editor.Mode == EditorMode.Pan && _panning)
         {
             var dx = e.ClientX - _lastX;
             var dy = e.ClientY - _lastY;
@@ -123,6 +154,17 @@ public partial class Canvas : ComponentBase
             _lastY = e.ClientY;
         }
 
+        if (_isSelecting)
+        {
+            _selectCurrentX = e.ClientX;
+            _selectCurrentY = e.ClientY;
+            
+            var rect = GetSelectionWorldRect();
+            SelectElementsInside(rect);
+            
+            StateHasChanged();
+        }
+        
         foreach (var field in _selectedFields)
         {
             if (field.IsResizing)
@@ -162,9 +204,22 @@ public partial class Canvas : ComponentBase
         }
     }
 
-    private void OnPointerUp(PointerEventArgs e)
+    private async void OnPointerUp(PointerEventArgs e)
     {
+        if (Editor.Mode == EditorMode.Pan)
+            Editor.SetMode(_previousMode);
         _panning = false;
+
+        if (_isSelecting)
+        {
+            _isSelecting = false;
+            _isFadingSelection = true;
+            
+            await Task.Delay(200);
+
+            _isFadingSelection = false;
+            StateHasChanged();
+        }
 
         foreach (var field in Fields)
         {
@@ -213,7 +268,6 @@ public partial class Canvas : ComponentBase
                     case "ArrowDown": field.PosY += step; break;
                     case "ArrowLeft": field.PosX -= step; break;
                     case "ArrowRight": field.PosX += step; break;
-                    case "Delete": Fields.Remove(field); break;
                 }
             }   
         }
@@ -244,6 +298,7 @@ public partial class Canvas : ComponentBase
             DeselectField(f);
     }
     
+    
     private void HandleFieldSelect((Field field, bool shift) data)
     {
         var (field, shift) = data;
@@ -260,8 +315,8 @@ public partial class Canvas : ComponentBase
     {
         if (field is TextField { TextSelected: true })
             return;
+        
         _isInteractingWithField = true;
-        _panning = false;
         _velX = 0;
         _velY = 0;
     }
@@ -276,6 +331,7 @@ public partial class Canvas : ComponentBase
         _panX = _zoomMouseX - worldX * newZoom;
         _panY = _zoomMouseY - worldY * newZoom;
     }
+    
     
     [JSInvokable]
     public void OnAnimationFrame()
@@ -296,7 +352,7 @@ public partial class Canvas : ComponentBase
             ApplyZoomAtCursor(oldZoom, _zoom);
         }
 
-        if (!_panning && !_isInteractingWithField)
+        if (Editor.Mode != EditorMode.Pan && !_isInteractingWithField)
         {
             const double friction = 0.7f;
 
@@ -316,18 +372,37 @@ public partial class Canvas : ComponentBase
     [JSInvokable]
     public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
     {
-        Console.WriteLine($"{key} was pressed");
-
         if (_selectedFields.Count == 0)
         {
             switch (key)
             {
+                case "escape":
+                    Editor.SetMode(EditorMode.Idle);
+                    break;
                 case "t":
                     Editor.SetMode(EditorMode.CreateTextField);
                     break;
             }
         }
+        else
+        {
+            var selected = _selectedFields.ToArray();
+            switch (key)
+            {
+                case "delete":
+                    foreach (var field in selected)
+                    {
+                        if (field is TextField { TextSelected: true })
+                            continue;
+                        
+                        _selectedFields.Remove(field);
+                        Fields.Remove(field);
+                    }
+                    break;
+            }
+        }
     }
+    
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -338,4 +413,40 @@ public partial class Canvas : ComponentBase
             await JS.InvokeVoidAsync("keyboardActions.register", dotnetRef);
         }
     }
+
+
+    private (double x, double y, double w, double h) GetSelectionWorldRect()
+    {
+        var x1 = Math.Min(_selectStartX, _selectCurrentX);
+        var y1 = Math.Min(_selectStartY, _selectCurrentY);
+        var x2 = Math.Max(_selectStartX, _selectCurrentX);
+        var y2 = Math.Max(_selectStartY, _selectCurrentY);
+
+        // Convert screen → world
+        var worldX1 = (x1 - _panX) / _zoom;
+        var worldY1 = (y1 - _panY) / _zoom;
+        var worldX2 = (x2 - _panX) / _zoom;
+        var worldY2 = (y2 - _panY) / _zoom;
+
+        return (worldX1, worldY1, worldX2 - worldX1, worldY2 - worldY1);
+    }
+
+    private void SelectElementsInside((double x, double y, double w, double h) rect)
+    {
+        var (x, y, w, h) = rect;
+
+        foreach (var field in Fields)
+        {
+            if (field.PosX >= x &&
+                field.PosY >= y &&
+                field.PosX + field.Width <= x + w &&
+                field.PosY + field.Height <= y + h)
+            {
+                SelectField(field);
+            }
+            else
+                DeselectField(field);
+        }
+    }
+
 }

@@ -34,3 +34,22 @@
             var(--pan-x) var(--pan-y),
             var(--pan-x) var(--pan-y);
 }
+.grid.pan {
+    cursor: grab;
+}
+.grid.panning {
+    cursor: grabbing;
+}
+
+.selection-box {
+    position: fixed;
+    border: 1px solid #4a90e2;
+    border-radius: 8px;
+    background: rgba(74, 144, 226, 0.2);
+    pointer-events: none;
+    z-index: 9999;
+    transition: opacity 0.2s ease-out;
+}
+.selection-box.fade-out {
+    opacity: 0;
+}

@@ -39,8 +39,6 @@ public partial class TextFieldView : ComponentBase
 
         Field.Height = Canvas.ExpandSnap(height);
         Field.Width = Canvas.ExpandSnap(width);
-        
-        Console.WriteLine(Field.Text);
     }
     
     
