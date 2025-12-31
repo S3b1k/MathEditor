@@ -9,6 +9,6 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddSingleton<Camera>();
-builder.Services.AddSingleton<EditorState>();
+builder.Services.AddSingleton<Editor>();
 
 await builder.Build().RunAsync();

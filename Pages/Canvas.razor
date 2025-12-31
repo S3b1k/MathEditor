@@ -4,7 +4,7 @@
 @using MathEditor.Services
 
 @inject IJSRuntime JS
-@inject EditorState Editor;
+@inject Editor Editor;
 @inject Camera Cam;
 
 <div class="canvas-container" tabindex="0"
@@ -21,12 +21,7 @@
     
     <div class="camera" style="@CameraStyle">
         @foreach (var field in Fields)
-        {
-            if (field is TextField tf)
-            {
-                <TextFieldView Field="tf"/>
-            }
-        }
+            @FieldViewResolver.Resolve(field);
     </div>
     
     @if (_isSelecting || _isFadingSelection)

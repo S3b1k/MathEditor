@@ -62,10 +62,13 @@ public partial class Canvas : ComponentBase
 
     
     #region Helper Methods
-    
     private static (double x, double y) Snap((double x, double y) pos) => (Snap(pos.x), Snap(pos.y));
     private static double Snap(double value) => Math.Round(value / BaseCellSize) * BaseCellSize;
+    
     public static double ExpandSnap(double value) => Math.Ceiling(value / BaseCellSize) * BaseCellSize;
+
+    private static (double x, double y) SpawnSnap((double x, double y) pos) => (SpawnSnap(pos.x), SpawnSnap(pos.y));
+    private static double SpawnSnap(double value) => Math.Floor(value / BaseCellSize) * BaseCellSize;
     
     private void StartPan(PointerEventArgs e)
     {
@@ -101,7 +104,7 @@ public partial class Canvas : ComponentBase
 
         if (e.Button == 0)
         {
-            var (posX, posY) = Snap(Cam.ScreenToWorld(e.ClientX, e.ClientY));
+            var (posX, posY) = SpawnSnap(Cam.ScreenToWorld(e.ClientX, e.ClientY));
             
             switch (Editor.Mode)
             {
@@ -162,7 +165,7 @@ public partial class Canvas : ComponentBase
             
             StateHasChanged();
         }
-        
+
         foreach (var field in Editor.SelectedFields)
         {
             if (field.IsResizing)
@@ -185,7 +188,7 @@ public partial class Canvas : ComponentBase
             else if (field.IsDragging)
             {
                 if (field is TextField { TextSelected: true })
-                    continue;
+                    break;
                 
                 var worldX = (e.ClientX - Cam.PanX) / Zoom - field.DragOffsetX;
                 var worldY = (e.ClientY - Cam.PanY) / Zoom - field.DragOffsetY;
@@ -322,6 +325,9 @@ public partial class Canvas : ComponentBase
                     break;
                 case "t":
                     Editor.SetMode(EditorMode.CreateTextField);
+                    break;
+                case "m":
+                    Editor.SetMode(EditorMode.CreateMathField);
                     break;
             }
         }

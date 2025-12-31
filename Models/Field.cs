@@ -2,14 +2,14 @@ using MathEditor.Pages;
 
 namespace MathEditor.Models;
 
-public abstract class Field
+public abstract class Field(double x, double y)
 {
     public Guid Id { get; } = Guid.NewGuid();
     
     // Transform
-    public double PosX { get; set; }
-    public double PosY { get; set; }
-    
+    public double PosX { get; set; } = x;
+    public double PosY { get; set; } = y;
+
     public double Width { get; set; } = Canvas.BaseCellSize * 6;
     public double Height { get; set; } = Canvas.BaseCellSize;
 

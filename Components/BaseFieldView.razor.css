@@ -1,16 +1,18 @@
 .field {
     position: absolute;
     background: none;
-    cursor: grab;
     display: inline-block;
     border-radius: 3px;
+    overflow: hidden;
 }
 .field:hover {
     outline: 2px dotted #4a90e2;
+    cursor: pointer;
 }
 .field.selected {
     outline: 3px solid #4a90e2;
     outline-offset: 2px;
+    cursor: move;
 }
 
 .resize-handle {

@@ -9,9 +9,9 @@ namespace MathEditor.Components;
 
 public partial class BaseFieldView<TField> : ComponentBase where TField : Field
 {
-    [Inject] public IJSRuntime JS { get; set; }
-    [Inject] public Camera Cam { get; set; }
-    [Inject] public EditorState Editor { get; set; }
+    [Inject] public required IJSRuntime JS { get; set; }
+    [Inject] public required Camera Cam { get; set; }
+    [Inject] public required Editor Editor { get; set; }
     
     [Parameter] public required TField Field { get; set; }
     [Parameter] public RenderFragment? Body { get; set; }

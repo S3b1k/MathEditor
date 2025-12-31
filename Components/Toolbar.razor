@@ -1,7 +1,7 @@
 @using MathEditor.Models
 @using MathEditor.Services
 @implements IDisposable;
-@inject EditorState Editor;
+@inject Editor Editor;
 
 <div class="toolbar">
         <button class="tool-button @(Editor.Mode == EditorMode.Pan ? "active" : "")" 

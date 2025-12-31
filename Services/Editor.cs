@@ -2,7 +2,7 @@ using MathEditor.Models;
 
 namespace MathEditor.Services;
 
-public class EditorState
+public class Editor
 {
     public event Action? OnStateChanged;
     public EditorMode Mode
@@ -28,8 +28,7 @@ public class EditorState
     
     public TextField CreateTextField(double posX, double posY) => new(posX, posY);
 
-    // TODO - Implement math fields
-    public TextField CreateMathField(double posX, double posY) => CreateTextField(posX, posY);
+    public MathField CreateMathField(double posX, double posY) => new(posX, posY);
     
     #endregion
  

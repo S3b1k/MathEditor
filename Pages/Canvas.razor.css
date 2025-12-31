@@ -27,12 +27,7 @@
             calc(var(--cell-size) * 5) calc(var(--cell-size) * 5),
             var(--cell-size) var(--cell-size),
             var(--cell-size) var(--cell-size);
-
-    /*background-position:*/
-    /*        var(--pan-x) var(--pan-y),*/
-    /*        var(--pan-x) var(--pan-y),*/
-    /*        var(--pan-x) var(--pan-y),*/
-    /*        var(--pan-x) var(--pan-y);*/
+    
 
     background-position: calc(var(--pan-x)) calc(var(--pan-y));
 }
