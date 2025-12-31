@@ -5,6 +5,7 @@
 
 @inject IJSRuntime JS
 @inject EditorState Editor;
+@inject Camera Cam;
 
 <div class="canvas-container" tabindex="0"
      @onpointerdown="OnPointerDown"
@@ -23,12 +24,7 @@
         {
             if (field is TextField tf)
             {
-                <TextFieldView Field="tf"
-                               Zoom="_zoom"
-                               PanX="_panX"
-                               PanY="_panY" 
-                               OnSelect="HandleFieldSelect"
-                               OnStartDrag="HandleFieldDragStart"/>
+                <TextFieldView Field="tf"/>
             }
         }
     </div>

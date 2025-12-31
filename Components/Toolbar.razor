@@ -14,6 +14,6 @@
 
 
 @code {
-        protected override void OnInitialized() => Editor.OnChange += StateHasChanged;
-        public void Dispose() => Editor.OnChange -= StateHasChanged;
+        protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
+        public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
 }

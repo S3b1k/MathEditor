@@ -1,79 +1,54 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using MathEditor.Models;
 using MathEditor.Pages;
 using Microsoft.JSInterop;
 
 namespace MathEditor.Components;
 
-public partial class TextFieldView : ComponentBase
+public partial class TextFieldView : BaseFieldView<TextField>
 {
-    [Parameter] public required TextField Field { get; set; }
+    private ElementReference _contentRef;
     
-    [Parameter] public double Zoom { get; set; }
-    [Parameter] public double PanX { get; set; }
-    [Parameter] public double PanY { get; set; }
     
-    [Parameter] public EventCallback<(Field field, bool shift)> OnSelect { get; set; }
-    [Parameter] public EventCallback<Field> OnStartDrag { get; set; }
-
-    private ElementReference _content;
-    private bool _clickingText;
-    
-    private string Style =>
-        $"position:absolute;" +
-        $"left:{Field.PosX.ToString(CultureInfo.InvariantCulture)}px;" +
-        $"top:{Field.PosY.ToString(CultureInfo.InvariantCulture)}px;" +
-        $"width:{Field.Width.ToString(CultureInfo.InvariantCulture)}px;" +
-        $"height:{Field.Height.ToString(CultureInfo.InvariantCulture)}px;";
-
-    
-    private async Task OnInput(ChangeEventArgs e)
+    private async Task OnInput()
     {
-        Field.Text = await JS.InvokeAsync<string>("textField.getText", _content);
+        Field.Text = await JS.InvokeAsync<string>("textField.getText", _contentRef);
         
-        var height = await JS.InvokeAsync<double>("textField.getHeight", _content);
-        var width = await JS.InvokeAsync<double>("textField.getWidth", _content);
-
-        Field.Height = Canvas.ExpandSnap(height);
-        Field.Width = Canvas.ExpandSnap(width);
+        var newHeight = Canvas.ExpandSnap(await JS.InvokeAsync<double>("textField.getHeight", _contentRef));
+        var newWidth = Canvas.ExpandSnap(await JS.InvokeAsync<double>("textField.getWidth", _contentRef));
+        
+        Field.Height = newHeight > Field.Height ? newHeight : Field.Height;
+        Field.Width = newWidth > Field.Width ? newWidth : Field.Width;
     }
-    
-    
-    private async Task HandlePointerDown(PointerEventArgs e)
+
+
+    protected override void OnInitialized()
     {
-        if (!_clickingText)
+        Field.OnFieldDeselected += OnDeselected;
+    }
+
+    private async void OnDeselected()
+    {
+        try
+        {
             Field.TextSelected = false;
-        Field.IsDragging = true;
+            await JS.InvokeVoidAsync("textField.clearSelection");
         
-        Field.DragOffsetX = (e.ClientX - (Field.PosX * Zoom + PanX)) / Zoom;
-        Field.DragOffsetY = (e.ClientY - (Field.PosY * Zoom + PanY)) / Zoom;
-
-        await OnStartDrag.InvokeAsync(Field);
-        await OnSelect.InvokeAsync((Field, e.ShiftKey));
-    }
-
-    private void SelectText()
-    {
-        _clickingText = true;
-        Field.TextSelected = true;
-    }
-    private void StopClickText() => _clickingText = false;
-    
-    private void StartResize(PointerEventArgs e)
-    {
-        Field.IsResizing = true;
-        Field.ResizeStartWidth = Field.Width;
-        Field.ResizeStartHeight = Field.Height;
-        Field.ResizeStartX = e.ClientX;
-        Field.ResizeStartY = e.ClientY;
+            var text = await JS.InvokeAsync<string>("textField.getText", _contentRef);
+            if(string.IsNullOrWhiteSpace(text))
+                Editor.DeleteField(Field);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
     
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-            await JS.InvokeVoidAsync("textField.setText", _content, Field.Text);
+            await JS.InvokeVoidAsync("textField.setText", _contentRef, Field.Text);
+        Field.TextSelected = await JS.InvokeAsync<bool>("field.hasContentFocus", _contentRef);
     }
 }

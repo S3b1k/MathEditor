@@ -21,6 +21,11 @@ window.keyboardActions = {
     }
 };
 
+window.field = {
+    hasContentFocus: function (element) {
+        return document.activeElement === element;
+    }
+};
 
 window.textField = {
     getText: function (element) {
@@ -34,5 +39,10 @@ window.textField = {
     },
     getWidth: function (element) {
         return element.scrollWidth;
+    },
+    clearSelection: function () {
+        const selection = window.getSelection();
+        if (selection)
+            selection.removeAllRanges();
     }
 };

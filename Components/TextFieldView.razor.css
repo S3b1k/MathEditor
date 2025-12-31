@@ -1,15 +1,3 @@
-.text-field {
-    position: absolute;
-    background: none;
-    cursor: grab;
-    display: inline-block;
-}
-.text-field.selected {
-    outline: 3px solid #4a90e2;
-    border-radius: 3px;
-    outline-offset: 2px;
-}
-
 .text-content {
     /*Block pointer events if unselected*/
     pointer-events: none;
@@ -23,27 +11,7 @@
     white-space: pre-wrap;
     outline: none;
 }
-.text-field.selected > .text-content {
+.field.selected > .text-content {
     pointer-events: auto;
     cursor: text;
-}
-
-
-.resize-handle {
-    visibility: hidden;
-    width: 10px;
-    height: 10px;
-    right: 0;
-    bottom: 0;
-    background: #888;
-    position: absolute;
-    cursor: se-resize;
-}
-.text-field.selected > .resize-handle {
-    visibility: visible;
-}
-
-
-.cursor {
-    position: absolute;
 }

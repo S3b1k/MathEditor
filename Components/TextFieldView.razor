@@ -1,17 +1,12 @@
-@inject IJSRuntime JS
+@inherits BaseFieldView<MathEditor.Models.TextField>
 
-<div class="text-field @(Field.IsSelected ? "selected" : "")" 
-     style="@Style"
-     @onpointerdown="HandlePointerDown">
-
-    <div class="text-content" 
-         contenteditable="true"
-         @oninput="OnInput"
-         @onpointerdown="SelectText"
-         @onpointerup="StopClickText"
-         @ref="_content"></div>
-    
-    @*TODO - Add resizing from all corners and edges like in Excalidraw*@
-    <div class="resize-handle"
-         @onpointerdown="StartResize"></div>
-</div>
+<BaseFieldView Field="Field"
+               OnPointerDown="PointerDown">
+     <Body>
+          <div class="text-content"
+               contenteditable="true"
+               @oninput="OnInput"
+               @ref="_contentRef">
+          </div>
+     </Body>
+</BaseFieldView>

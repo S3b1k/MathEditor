@@ -1,0 +1,11 @@
+@typeparam TField
+
+<div class="field @(Field.IsSelected ? "selected" : "")"
+     style="@Style"
+     @onpointerdown="HandlePointerDown">
+     
+    @Body
+     
+    <div class="resize-handle"
+         @onpointerdown="StartResize"></div>
+</div>
