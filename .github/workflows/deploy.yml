@@ -1,0 +1,45 @@
+name: Deploy Blazor to GitHub Pages
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish Blazor app
+        run: dotnet publish -c Release
+
+      - name: Deploy to release branch
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git fetch origin release
+          git checkout release
+
+          # Remove everything except .git
+          find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
+
+          # Copy published files
+          cp -r bin/Release/net10.0/publish/wwwroot/* .
+
+          # GitHub Pages needs this to disable Jekyll
+          touch .nojekyll
+
+          git add .
+          git commit -m "Deploy release ${{ github.event.release.tag_name }}"
+          git push origin release
