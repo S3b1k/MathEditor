@@ -47,7 +47,7 @@ public partial class Canvas : ComponentBase
     
     // Fields
     private bool _isInteractingWithField;
-    private List<Field> Fields { get; } = [];
+    private List<Field> Fields => Editor.Fields;
     
     // Selecting
     private bool _isSelecting;
@@ -80,19 +80,13 @@ public partial class Canvas : ComponentBase
         Cam.ResetVelocity();
     }
 
-    private void DeleteField(Field field)
-    {
-        if (field.IsSelected)
-            Editor.DeselectField(field);
-        Fields.Remove(field);
-    }
+
     #endregion
     
     
     protected override void OnInitialized()
     {
         Editor.OnFieldClicked += () => _isInteractingWithField = true;
-        Editor.OnFieldDeleteRequest += DeleteField;
     }
     
     #region Events
@@ -113,11 +107,11 @@ public partial class Canvas : ComponentBase
                     StartPan(e);
                     break;
                 case EditorMode.CreateTextField:
-                    Fields.Add(Editor.CreateTextField(posX, posY));
+                    Editor.CreateTextField(posX, posY);
                     Editor.SetMode(EditorMode.Idle);
                     break;
                 case EditorMode.CreateMathField:
-                    Fields.Add(Editor.CreateMathField(posX, posY));
+                    Editor.CreateMathField(posX, posY);
                     Editor.SetMode(EditorMode.Idle);
                     break;
                 default:
@@ -187,7 +181,7 @@ public partial class Canvas : ComponentBase
             }
             else if (field.IsDragging)
             {
-                if (field is TextField { TextSelected: true })
+                if (field.ContentSelected)
                     break;
                 
                 var worldX = (e.ClientX - Cam.PanX) / Zoom - field.DragOffsetX;
@@ -257,10 +251,10 @@ public partial class Canvas : ComponentBase
         if (Editor.SelectionCount > 0)
         {
             var step = e.CtrlKey ? 1 : BaseCellSize;
-
+        
             foreach (var field in Editor.SelectedFields)
             {
-                if (field is TextField { TextSelected: true })
+                if (field.ContentSelected)
                     break;
                 
                 switch (e.Key)
@@ -313,50 +307,13 @@ public partial class Canvas : ComponentBase
         StateHasChanged();
     }
     
-    [JSInvokable]
-    public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
-    {
-        if (Editor.SelectionCount == 0)
-        {
-            switch (key)
-            {
-                case "escape":
-                    Editor.SetMode(EditorMode.Idle);
-                    break;
-                case "t":
-                    Editor.SetMode(EditorMode.CreateTextField);
-                    break;
-                case "m":
-                    Editor.SetMode(EditorMode.CreateMathField);
-                    break;
-            }
-        }
-        else
-        {
-            switch (key)
-            {
-                case "delete":
-                    var selected = Editor.SelectedFields.ToArray();
-                    foreach (var field in selected)
-                    {
-                        if (field is TextField { TextSelected: true })
-                            continue;
-                        
-                        DeleteField(field);
-                    }
-                    break;
-            }
-        }
-    }
-    
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var dotnetRef = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("mathEditor.startRenderLoop", dotnetRef);
-            await JS.InvokeVoidAsync("keyboardActions.register", dotnetRef);
+            await JS.InvokeVoidAsync("mathEditor.startRenderLoop", DotNetObjectReference.Create(this));
+            await JS.InvokeVoidAsync("keyboardActions.register", DotNetObjectReference.Create(Editor));
         }
     }
 

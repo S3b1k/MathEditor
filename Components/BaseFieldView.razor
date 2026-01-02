@@ -2,10 +2,14 @@
 
 <div class="field @(Field.IsSelected ? "selected" : "")"
      style="@Style"
-     @onpointerdown="HandlePointerDown">
+     @onpointerdown="HandlePointerDown"
+     @ondblclick="HandleDoubleClick">
      
     @Body
      
-    <div class="resize-handle"
-         @onpointerdown="StartResize"></div>
+    @if (Field is { IsSelected: true, IsResizable: true })
+    {
+        <div class="resize-handle"
+             @onpointerdown="StartResize"></div>
+    }
 </div>

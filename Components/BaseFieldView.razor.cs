@@ -17,6 +17,7 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     [Parameter] public RenderFragment? Body { get; set; }
 
     [Parameter] public EventCallback<PointerEventArgs> OnPointerDown { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
     
     private string Style =>
         $"position:absolute;" +
@@ -42,6 +43,10 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
         Editor.NotifyFieldClicked();
         return OnPointerDown.InvokeAsync(e);
     }
+
+    
+    private Task HandleDoubleClick(MouseEventArgs e) => OnDoubleClick.InvokeAsync(e);
+    
 
     private void StartResize(PointerEventArgs e)
     {

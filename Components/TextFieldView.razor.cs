@@ -14,8 +14,8 @@ public partial class TextFieldView : BaseFieldView<TextField>
     {
         Field.Text = await JS.InvokeAsync<string>("textField.getText", _contentRef);
         
-        var newHeight = Canvas.ExpandSnap(await JS.InvokeAsync<double>("textField.getHeight", _contentRef));
-        var newWidth = Canvas.ExpandSnap(await JS.InvokeAsync<double>("textField.getWidth", _contentRef));
+        var newHeight = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getHeight", _contentRef));
+        var newWidth = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getWidth", _contentRef));
         
         Field.Height = newHeight > Field.Height ? newHeight : Field.Height;
         Field.Width = newWidth > Field.Width ? newWidth : Field.Width;
@@ -26,12 +26,13 @@ public partial class TextFieldView : BaseFieldView<TextField>
     {
         Field.OnFieldDeselected += OnDeselected;
     }
+    
 
     private async void OnDeselected()
     {
         try
         {
-            Field.TextSelected = false;
+            Field.ContentSelected = false;
             await JS.InvokeVoidAsync("textField.clearSelection");
         
             var text = await JS.InvokeAsync<string>("textField.getText", _contentRef);
@@ -48,7 +49,12 @@ public partial class TextFieldView : BaseFieldView<TextField>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             await JS.InvokeVoidAsync("textField.setText", _contentRef, Field.Text);
-        Field.TextSelected = await JS.InvokeAsync<bool>("field.hasContentFocus", _contentRef);
+            
+            if (Field.FirstInstantiation)
+                await JS.InvokeVoidAsync("mathEditor.setElementFocus", _contentRef);
+        }
+        Field.ContentSelected = await JS.InvokeAsync<bool>("mathEditor.isElementFocused", _contentRef);
     }
 }

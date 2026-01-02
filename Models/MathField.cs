@@ -1,7 +1,15 @@
+using MathEditor.Pages;
+
 namespace MathEditor.Models;
 
-public class MathField(double x, double y) : Field(x, y)
+public class MathField : Field
 {
-    public string Text { get; set; } = "New text";
-    public bool TextSelected;
+    public string Latex { get; set; } = "";
+
+    public MathField(double x, double y) : base(x, y)
+    {
+        IsResizable = false;
+        Width = Canvas.BaseCellSize * 12;
+        Height = Canvas.BaseCellSize * 2;
+    }
 }

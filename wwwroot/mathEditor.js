@@ -5,6 +5,13 @@ window.mathEditor = {
             requestAnimationFrame(loop);
         }
         requestAnimationFrame(loop);
+    },
+    isElementFocused: function (element) {
+        return document.activeElement === element;
+    },
+    setElementFocus: function (element) {
+        document.activeElement.blur();
+        element.focus();
     }
 };
 
@@ -22,10 +29,14 @@ window.keyboardActions = {
 };
 
 window.field = {
-    hasContentFocus: function (element) {
-        return document.activeElement === element;
+    getHeight: function (element) {
+        return element.scrollHeight;
+    },
+    getWidth: function (element) {
+        return element.scrollWidth;
     }
 };
+
 
 window.textField = {
     getText: function (element) {
@@ -33,12 +44,6 @@ window.textField = {
     },
     setText: function (element, text) {
         element.innerText = text;
-    },
-    getHeight: function (element) {
-        return element.scrollHeight;
-    },
-    getWidth: function (element) {
-        return element.scrollWidth;
     },
     clearSelection: function () {
         const selection = window.getSelection();
