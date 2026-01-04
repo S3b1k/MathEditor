@@ -1,12 +1,15 @@
 @inherits BaseFieldView<MathEditor.Models.TextField>
 
 <BaseFieldView Field="Field"
-               OnPointerDown="PointerDown">
+               OnPointerDown="PointerDown"
+               OnStartEditing="StartEditing"
+               HideOverflow="true">
     <Body>
         <div class="text-content"
              contenteditable="true"
+             spellcheck="false"
              @oninput="OnInput"
-             @ref="_contentRef">
+             @ref="ContentRef">
         </div>
     </Body>
 </BaseFieldView>

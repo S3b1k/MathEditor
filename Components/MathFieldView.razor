@@ -1,8 +1,9 @@
 @inherits BaseFieldView<MathEditor.Models.MathField>
 
 <BaseFieldView Field="Field"
-               OnPointerDown="PointerDown">
+               OnPointerDown="PointerDown"
+               OnStartEditing="StartEditing">
     <Body>
-        <math-field class="math-content" @ref="_contentRef"></math-field>
+        <math-field class="math-content" @ref="ContentRef"></math-field>
     </Body>
 </BaseFieldView>

@@ -15,9 +15,14 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     
     [Parameter] public required TField Field { get; set; }
     [Parameter] public RenderFragment? Body { get; set; }
+    [Parameter] public bool HideOverflow { get; set; }
+    
+    private ElementReference _fieldRef;
+    protected ElementReference ContentRef;
 
     [Parameter] public EventCallback<PointerEventArgs> OnPointerDown { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
+    [Parameter] public EventCallback OnStartEditing { get; set; }
     
     private string Style =>
         $"position:absolute;" +
@@ -27,33 +32,45 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
         $"height:{Field.Height.ToString(CultureInfo.InvariantCulture)}px;";
 
     
-    protected virtual void PointerDown(PointerEventArgs e)
-    {
-        Field.IsDragging = true;
-
-        var (dx, dy) = Cam.ComputeDragOffset(Field, e.ClientX, e.ClientY);
-        Field.DragOffsetX = dx;
-        Field.DragOffsetY = dy;
-        
-        Editor.SelectField(Field, e.ShiftKey);
-    }
-    
+    #region events
     private Task HandlePointerDown(PointerEventArgs e)
     {
         Editor.NotifyFieldClicked();
         return OnPointerDown.InvokeAsync(e);
     }
-
     
-    private Task HandleDoubleClick(MouseEventArgs e) => OnDoubleClick.InvokeAsync(e);
     
-
-    private void StartResize(PointerEventArgs e)
+    private Task StartEditing(MouseEventArgs e) => OnStartEditing.InvokeAsync(e);
+    
+    
+    private void StartResize(PointerEventArgs e, ResizeDirection direction)
+    { 
+        Editor.BeginFieldResize(Field, direction, (e.ClientX, e.ClientY));
+    }
+    
+    private void StartDrag(PointerEventArgs e)
     {
-        Field.IsResizing = true;
-        Field.ResizeStartWidth = Field.Width;
-        Field.ResizeStartHeight = Field.Height;
-        Field.ResizeStartX = e.ClientX;
-        Field.ResizeStartY = e.ClientY;
+        var dragOffset = Cam.ComputeDragOffset(Field, e.ClientX, e.ClientY);
+        Editor.BeginFieldDrag(Field, dragOffset);
+    }
+    #endregion
+    
+    
+    #region overridables
+    protected virtual void PointerDown(PointerEventArgs e)
+    {
+        StartDrag(e);
+        Editor.SelectField(Field, e.ShiftKey);
+    }
+    
+
+    protected virtual void StartEditing() => Field.IsEditing = true;
+    #endregion
+    
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender && HideOverflow) 
+            await JS.InvokeVoidAsync("field.hideOverflow", _fieldRef, HideOverflow);
     }
 }

@@ -1,8 +1,12 @@
 .field {
     position: absolute;
-    background: none;
     display: inline-block;
     border-radius: 3px;
+    width: 100%;
+    height: 100%;
+    
+    --overflow: visible;
+    overflow: var(--overflow);
 }
 .field:hover {
     outline: 2px dotted #4a90e2;
@@ -11,15 +15,34 @@
 .field.selected {
     outline: 3px solid #4a90e2;
     outline-offset: 2px;
-    cursor: move;
+    cursor: default;
 }
 
-.resize-handle {
-    width: 10px;
-    height: 10px;
-    right: 0;
-    bottom: 0;
-    background: #888;
+
+.selection-frame {
     position: absolute;
-    cursor: se-resize;
+    inset: -10px;
+    border: 1px solid #4a90e2;
+    border-radius: 3px;
+    cursor: move;
+    user-select: none;
 }
+
+
+.handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border: 1px solid #4a90e2;
+    border-radius: 3px;
+}
+
+.handle.tl { top: -5px; left: -5px; cursor: nwse-resize; }
+.handle.t  { top: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle.tr { top: -5px; right: -5px; cursor: nesw-resize; }
+.handle.r  { top: 50%; right: -5px; transform: translateY(-50%); cursor: ew-resize; }
+.handle.br { bottom: -5px; right: -5px; cursor: nwse-resize; }
+.handle.b  { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle.bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.handle.l  { top: 50%; left: -5px; transform: translateY(-50%); cursor: ew-resize; }

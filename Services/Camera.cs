@@ -23,12 +23,13 @@ public class Camera
 
     public (double screenX, double screenY) WorldToScreen(double worldX, double worldY)
         => (worldX * Zoom + PanX, worldY * Zoom + PanY);
-
+    
     public (double offsetX, double offsetY) ComputeDragOffset(Field field, double screenX, double screenY)
     {
         var (fx, fy) = WorldToScreen(field.PosX, field.PosY);
         return ((screenX - fx) / Zoom, (screenY - fy) / Zoom);
     }
+    
 
     public void ApplyZoomAtCursor(double oldZoom, double newZoom)
     {

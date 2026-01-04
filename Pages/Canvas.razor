@@ -15,7 +15,7 @@
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown">
 
-    <div class="grid @(Editor.Mode == EditorMode.Pan ? _panning ? "panning" : "pan" : "")"
+    <div class="grid @(Editor.Mode == Enums.Pan ? _panning ? "panning" : "pan" : "")"
          style="@GridStyle">
     </div>
     

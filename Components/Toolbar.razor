@@ -4,12 +4,12 @@
 @inject Editor Editor;
 
 <div class="toolbar">
-        <button class="tool-button @(Editor.Mode == EditorMode.Pan ? "active" : "")" 
-                @onclick="() => Editor.SetMode(EditorMode.Pan)">Pan</button>
-        <button class="tool-button @(Editor.Mode == EditorMode.CreateTextField ? "active" : "")" 
-                @onclick="() => Editor.SetMode(EditorMode.CreateTextField)">New Text</button>
-        <button class="tool-button @(Editor.Mode == EditorMode.CreateMathField ? "active" : "")" 
-                @onclick="() => Editor.SetMode(EditorMode.CreateMathField)">New Expression</button>
+        <button class="tool-button @(Editor.Mode == Enums.Pan ? "active" : "")" 
+                @onclick="() => Editor.SetMode(Enums.Pan)">Pan</button>
+        <button class="tool-button @(Editor.Mode == Enums.CreateTextField ? "active" : "")" 
+                @onclick="() => Editor.SetMode(Enums.CreateTextField)">New Text</button>
+        <button class="tool-button @(Editor.Mode == Enums.CreateMathField ? "active" : "")" 
+                @onclick="() => Editor.SetMode(Enums.CreateMathField)">New Expression</button>
 </div>
 
 

@@ -5,7 +5,6 @@ namespace MathEditor.Models;
 public abstract class Field(double x, double y)
 {
     public Guid Id { get; } = Guid.NewGuid();
-    public bool FirstInstantiation = true;
     
     // Transform
     public double PosX { get; set; } = x;
@@ -16,20 +15,24 @@ public abstract class Field(double x, double y)
 
     public bool IsSelected { get; set; }
     public event Action? OnFieldDeselected;
+
+    public bool IsEditing { get; set; }
     
     // Dragging
-    public bool ContentSelected { get; set; }
     public bool IsDragging { get; set; }
     public double DragOffsetX { get; set; }
     public double DragOffsetY { get; set; }
 
     // Resizing
+    public ResizeDirection ResizeDir { get; set; }
     public bool IsResizable { get; set; } = true;
     public bool IsResizing { get; set; }
     public double ResizeStartWidth { get; set; }
     public double ResizeStartHeight { get; set; }
-    public double ResizeStartX { get; set; }
-    public double ResizeStartY { get; set; }
+    public double ResizeStartMouseX { get; set; }
+    public double ResizeStartMouseY { get; set; }
+    public double ResizeStartPosX { get; set; }
+    public double ResizeStartPosY { get; set; }
 
 
     public void NotifyFieldDeselected() => OnFieldDeselected?.Invoke();

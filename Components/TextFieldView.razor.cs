@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components;
 using MathEditor.Models;
 using MathEditor.Pages;
 using Microsoft.JSInterop;
@@ -7,35 +6,33 @@ namespace MathEditor.Components;
 
 public partial class TextFieldView : BaseFieldView<TextField>
 {
-    private ElementReference _contentRef;
-    
-    
-    private async Task OnInput()
-    {
-        Field.Text = await JS.InvokeAsync<string>("textField.getText", _contentRef);
-        
-        var newHeight = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getHeight", _contentRef));
-        var newWidth = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getWidth", _contentRef));
-        
-        Field.Height = newHeight > Field.Height ? newHeight : Field.Height;
-        Field.Width = newWidth > Field.Width ? newWidth : Field.Width;
-    }
-
-
     protected override void OnInitialized()
     {
         Field.OnFieldDeselected += OnDeselected;
     }
     
-
+    
+    #region events
+    private async Task OnInput()
+    {
+        Field.Text = await JS.InvokeAsync<string>("textField.getText", ContentRef);
+        
+        var newHeight = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getHeight", ContentRef));
+        var newWidth = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getWidth", ContentRef));
+        
+        Field.Height = newHeight > Field.Height ? newHeight : Field.Height;
+        Field.Width = newWidth > Field.Width ? newWidth : Field.Width;
+    }
+    
     private async void OnDeselected()
     {
         try
         {
-            Field.ContentSelected = false;
+            Field.IsEditing = false;
             await JS.InvokeVoidAsync("textField.clearSelection");
+            await JS.InvokeVoidAsync("textField.toggleSpellCheck", ContentRef, false);
         
-            var text = await JS.InvokeAsync<string>("textField.getText", _contentRef);
+            var text = await JS.InvokeAsync<string>("textField.getText", ContentRef);
             if(string.IsNullOrWhiteSpace(text))
                 Editor.DeleteField(Field);
         }
@@ -44,17 +41,29 @@ public partial class TextFieldView : BaseFieldView<TextField>
             Console.WriteLine(e);
         }
     }
+    #endregion
+
+    
+    #region overrides
+    protected override async void StartEditing()
+    {
+        try
+        {
+            base.StartEditing();
+            await JS.InvokeVoidAsync("mathEditor.focusElement", ContentRef);
+            await JS.InvokeVoidAsync("textField.toggleSpellCheck", ContentRef, true);
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+        }
+    }
+    #endregion
     
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-        {
-            await JS.InvokeVoidAsync("textField.setText", _contentRef, Field.Text);
-            
-            if (Field.FirstInstantiation)
-                await JS.InvokeVoidAsync("mathEditor.setElementFocus", _contentRef);
-        }
-        Field.ContentSelected = await JS.InvokeAsync<bool>("mathEditor.isElementFocused", _contentRef);
+            await JS.InvokeVoidAsync("textField.setText", ContentRef, Field.Text);
     }
 }

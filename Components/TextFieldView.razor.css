@@ -1,17 +1,18 @@
+.field.editing .text-content {
+    pointer-events: auto;
+    cursor: text;
+}
+
 .text-content {
     /*Block pointer events if unselected*/
     pointer-events: none;
+    user-select: none;
     
     /*Formatting*/
     font-size: 11pt;
     line-height: 1.5;
     
     width: 100%;
-    overflow: hidden;
     white-space: pre-wrap;
     outline: none;
-}
-.field.selected > .text-content {
-    pointer-events: auto;
-    cursor: text;
 }

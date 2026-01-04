@@ -1,15 +1,32 @@
+@using MathEditor.Models
 @typeparam TField
 
-<div class="field @(Field.IsSelected ? "selected" : "")"
+<div class="field-wrapper"
      style="@Style"
      @onpointerdown="HandlePointerDown"
-     @ondblclick="HandleDoubleClick">
-     
-    @Body
-     
-    @if (Field is { IsSelected: true, IsResizable: true })
+     @ondblclick="StartEditing">
+    
+    <div class="field @(Field.IsSelected ? "selected" : "") @(Field.IsEditing ? "editing" : "")"
+         @ref="_fieldRef">
+        @Body
+    </div>
+
+    @if (Field is { IsSelected: true, IsEditing: false })
     {
-        <div class="resize-handle"
-             @onpointerdown="StartResize"></div>
+        <div class="selection-frame"
+             @onpointerdown="StartDrag">
+
+            @if (Field.IsResizable)
+            {
+                <div class="handle tl" @onpointerdown="e => StartResize(e, ResizeDirection.TopLeft)"></div>
+                <div class="handle t" @onpointerdown="e => StartResize(e, ResizeDirection.Top)"></div>
+                <div class="handle tr" @onpointerdown="e => StartResize(e, ResizeDirection.TopRight)"></div>
+                <div class="handle r" @onpointerdown="e => StartResize(e, ResizeDirection.Right)"></div>
+                <div class="handle br" @onpointerdown="e => StartResize(e, ResizeDirection.BottomRight)"></div>
+                <div class="handle b" @onpointerdown="e => StartResize(e, ResizeDirection.Bottom)"></div>
+                <div class="handle bl" @onpointerdown="e => StartResize(e, ResizeDirection.BottomLeft)"></div>
+                <div class="handle l" @onpointerdown="e => StartResize(e, ResizeDirection.Left)"></div>
+            }
+        </div>
     }
 </div>

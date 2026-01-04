@@ -56,23 +56,23 @@ public partial class Canvas : ComponentBase
     private double _selectCurrentX, _selectCurrentY;
     
     // Editor
-    private EditorMode _previousMode = EditorMode.Idle;
+    private Enums _previousMode = Enums.Idle;
     
     #endregion
 
     
     #region Helper Methods
-    private static (double x, double y) Snap((double x, double y) pos) => (Snap(pos.x), Snap(pos.y));
+    private static (double x, double y) Snap((double x, double y) val) => (Snap(val.x), Snap(val.y));
     private static double Snap(double value) => Math.Round(value / BaseCellSize) * BaseCellSize;
     
     public static double ExpandSnap(double value) => Math.Ceiling(value / BaseCellSize) * BaseCellSize;
 
-    private static (double x, double y) SpawnSnap((double x, double y) pos) => (SpawnSnap(pos.x), SpawnSnap(pos.y));
+    private static (double x, double y) SpawnSnap((double x, double y) val) => (SpawnSnap(val.x), SpawnSnap(val.y));
     private static double SpawnSnap(double value) => Math.Floor(value / BaseCellSize) * BaseCellSize;
     
     private void StartPan(PointerEventArgs e)
     {
-        Editor.SetMode(EditorMode.Pan);
+        Editor.SetMode(Enums.Pan);
         _panning = true;
             
         _lastX = e.ClientX;
@@ -102,17 +102,17 @@ public partial class Canvas : ComponentBase
             
             switch (Editor.Mode)
             {
-                case EditorMode.Pan:
-                    _previousMode = EditorMode.Pan;
+                case Enums.Pan:
+                    _previousMode = Enums.Pan;
                     StartPan(e);
                     break;
-                case EditorMode.CreateTextField:
+                case Enums.CreateTextField:
                     Editor.CreateTextField(posX, posY);
-                    Editor.SetMode(EditorMode.Idle);
+                    Editor.SetMode(Enums.Idle);
                     break;
-                case EditorMode.CreateMathField:
+                case Enums.CreateMathField:
                     Editor.CreateMathField(posX, posY);
-                    Editor.SetMode(EditorMode.Idle);
+                    Editor.SetMode(Enums.Idle);
                     break;
                 default:
                     Editor.DeselectAllFields();
@@ -135,7 +135,7 @@ public partial class Canvas : ComponentBase
 
     private void OnPointerMove(PointerEventArgs e)
     {
-        if (Editor.Mode == EditorMode.Pan && _panning)
+        if (Editor.Mode == Enums.Pan && _panning)
         {
             var dx = e.ClientX - _lastX;
             var dy = e.ClientY - _lastY;
@@ -164,24 +164,48 @@ public partial class Canvas : ComponentBase
         {
             if (field.IsResizing)
             {
-                var dx = (e.ClientX - field.ResizeStartX) / Zoom;
-                var dy = (e.ClientY - field.ResizeStartY) / Zoom;
+                var dx = (e.ClientX - field.ResizeStartMouseX) / Zoom;
+                var dy = (e.ClientY - field.ResizeStartMouseY) / Zoom;
 
-                var newWidth = field.ResizeStartWidth + dx;
-                var newHeight = field.ResizeStartHeight + dy;
+                var startX = field.ResizeStartPosX;
+                var startY = field.ResizeStartPosY;
+                
+                var (newX, newY, newWidth, newHeight) = field.ResizeDir switch
+                {
+                    ResizeDirection.TopLeft => 
+                        (startX + dx, startY + dy, field.ResizeStartWidth - dx, field.ResizeStartHeight - dy),
+                    ResizeDirection.Top => 
+                        (startX, startY + dy, field.Width, field.ResizeStartHeight - dy),
+                    ResizeDirection.TopRight => 
+                        (startX, startY + dy, field.ResizeStartWidth + dx, field.ResizeStartHeight - dy),
+                    ResizeDirection.Right => 
+                        (startX, startY, field.ResizeStartWidth + dx, field.Height),
+                    ResizeDirection.BottomRight => 
+                        (startX, startY, field.ResizeStartWidth + dx, field.ResizeStartHeight + dy),
+                    ResizeDirection.Bottom => 
+                        (startX, startY, field.Width, field.ResizeStartHeight + dy),
+                    ResizeDirection.BottomLeft => 
+                        (startX + dx, startY, field.ResizeStartWidth - dx, field.ResizeStartHeight + dy),
+                    // Left
+                    _ => (startX + dx, startY, field.ResizeStartWidth - dx, field.Height)
+                };
 
                 if (!e.CtrlKey)
                 {
-                    newWidth = Snap(newWidth);
-                    newHeight = Snap(newHeight);
+                    (newWidth, newHeight) = Snap((newWidth, newHeight));
+                    (newX, newY) = Snap((newX, newY));
                 }
                 
+                if (field.Width > BaseCellSize)
+                    field.PosX = newX;
+                if (field.Height > BaseCellSize)
+                    field.PosY = newY;
                 field.Width = Math.Max(BaseCellSize, newWidth);
                 field.Height = Math.Max(BaseCellSize, newHeight);
             }
             else if (field.IsDragging)
             {
-                if (field.ContentSelected)
+                if (field.IsEditing)
                     break;
                 
                 var worldX = (e.ClientX - Cam.PanX) / Zoom - field.DragOffsetX;
@@ -201,7 +225,7 @@ public partial class Canvas : ComponentBase
 
     private async Task OnPointerUp(PointerEventArgs e)
     {
-        if (Editor.Mode == EditorMode.Pan)
+        if (Editor.Mode == Enums.Pan)
             Editor.SetMode(_previousMode);
         _panning = false;
 
@@ -254,7 +278,7 @@ public partial class Canvas : ComponentBase
         
             foreach (var field in Editor.SelectedFields)
             {
-                if (field.ContentSelected)
+                if (field.IsEditing)
                     break;
                 
                 switch (e.Key)
@@ -290,7 +314,7 @@ public partial class Canvas : ComponentBase
             Cam.ApplyZoomAtCursor(oldZoom, Zoom);
         }
 
-        if (Editor.Mode != EditorMode.Pan && !_isInteractingWithField)
+        if (Editor.Mode != Enums.Pan && !_isInteractingWithField)
         {
             const double friction = 0.7f;
 

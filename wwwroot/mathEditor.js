@@ -9,11 +9,22 @@ window.mathEditor = {
     isElementFocused: function (element) {
         return document.activeElement === element;
     },
-    setElementFocus: function (element) {
-        document.activeElement.blur();
+    focusElement: function (element) {
+        this.unfocusElement();
         element.focus();
+        
+        const range = document.createRange();
+        range.selectNodeContents(element);
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    },
+    unfocusElement: function () {
+        document.activeElement.blur();
     }
 };
+
 
 window.keyboardActions = {
     register: function (dotnetRef) {
@@ -34,6 +45,9 @@ window.field = {
     },
     getWidth: function (element) {
         return element.scrollWidth;
+    },
+    hideOverflow: function (element, value) {
+        element.style.setProperty("--overflow", value ? "hidden" : "visible");
     }
 };
 
@@ -49,5 +63,8 @@ window.textField = {
         const selection = window.getSelection();
         if (selection)
             selection.removeAllRanges();
+    },
+    toggleSpellCheck: function (element, value) {
+        element.spellcheck = value;
     }
 };

@@ -1,5 +1,4 @@
 using MathEditor.Models;
-using MathEditor.Pages;
 using Microsoft.JSInterop;
 
 namespace MathEditor.Services;
@@ -7,7 +6,7 @@ namespace MathEditor.Services;
 public class Editor
 {
     public event Action? OnStateChanged;
-    public EditorMode Mode
+    public Enums Mode
     {
         get;
         private set
@@ -15,7 +14,7 @@ public class Editor
             field = value;
             NotifyStateChanged();
         }
-    } = EditorMode.Idle;
+    } = Enums.Idle;
     
     public List<Field> Fields { get; } = [];
     
@@ -24,25 +23,19 @@ public class Editor
     public int SelectionCount => SelectedFields.Count;
     
 
-    public void SetMode(EditorMode mode) => Mode = mode;
+    public void SetMode(Enums mode) => Mode = mode;
     
     
     #region Field Factory
-    
-    public TextField CreateTextField(double posX, double posY)
+
+    private void CreateField(Field field)
     {
-        var field = new TextField(posX, posY);
         Fields.Add(field);
         SelectField(field);
-        return field;
     }
-
-    public MathField CreateMathField(double posX, double posY)
-    {
-        var field = new MathField(posX, posY);
-        Fields.Add(field);
-        return field;
-    }
+    
+    public void CreateTextField(double posX, double posY) => CreateField(new TextField(posX, posY));
+    public void CreateMathField(double posX, double posY) => CreateField(new MathField(posX, posY));
 
     #endregion
  
@@ -89,6 +82,27 @@ public class Editor
             DeselectField(field);
         Fields.Remove(field);
     }
+
+
+    public static void BeginFieldDrag(Field field, (double x, double y) dragOffset)
+    {
+        field.IsDragging = true;
+        field.DragOffsetX = dragOffset.x;
+        field.DragOffsetY = dragOffset.y;
+    }
+
+
+    public static void BeginFieldResize(Field field, ResizeDirection dir, (double x, double y) startPos)
+    {
+        field.IsResizing = true;
+        field.ResizeStartWidth = field.Width;
+        field.ResizeStartHeight = field.Height;
+        field.ResizeStartMouseX = startPos.x;
+        field.ResizeStartMouseY = startPos.y;
+        field.ResizeStartPosX = field.PosX;
+        field.ResizeStartPosY = field.PosY;
+        field.ResizeDir = dir;
+    }
     #endregion
     
     
@@ -101,13 +115,13 @@ public class Editor
             switch (key)
             {
                 case "escape":
-                    SetMode(EditorMode.Idle);
+                    SetMode(Enums.Idle);
                     break;
                 case "t":
-                    SetMode(EditorMode.CreateTextField);
+                    SetMode(Enums.CreateTextField);
                     break;
                 case "m":
-                    SetMode(EditorMode.CreateMathField);
+                    SetMode(Enums.CreateMathField);
                     break;
             }
         }
@@ -122,7 +136,7 @@ public class Editor
                     var selected = SelectedFields.ToArray();
                     foreach (var field in selected)
                     {
-                        if (field.ContentSelected)
+                        if (field.IsEditing)
                             continue;
                     
                         DeleteField(field);
