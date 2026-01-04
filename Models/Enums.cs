@@ -19,3 +19,12 @@ public enum ResizeDirection
     BottomLeft,
     Left
 }
+
+[Flags]
+public enum ResizableAxis
+{
+    None = 0,
+    Horizontal = 1,
+    Vertical = 2,
+    All = Horizontal | Vertical
+}

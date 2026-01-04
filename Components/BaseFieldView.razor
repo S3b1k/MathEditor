@@ -15,18 +15,33 @@
     {
         <div class="selection-frame"
              @onpointerdown="StartDrag">
-
-            @if (Field.IsResizable)
+            
+            @if (CanResizeAll)
             {
                 <div class="handle tl" @onpointerdown="e => StartResize(e, ResizeDirection.TopLeft)"></div>
-                <div class="handle t" @onpointerdown="e => StartResize(e, ResizeDirection.Top)"></div>
                 <div class="handle tr" @onpointerdown="e => StartResize(e, ResizeDirection.TopRight)"></div>
-                <div class="handle r" @onpointerdown="e => StartResize(e, ResizeDirection.Right)"></div>
                 <div class="handle br" @onpointerdown="e => StartResize(e, ResizeDirection.BottomRight)"></div>
-                <div class="handle b" @onpointerdown="e => StartResize(e, ResizeDirection.Bottom)"></div>
                 <div class="handle bl" @onpointerdown="e => StartResize(e, ResizeDirection.BottomLeft)"></div>
+            }
+            
+            @if (CanResizeH)
+            {
                 <div class="handle l" @onpointerdown="e => StartResize(e, ResizeDirection.Left)"></div>
+                <div class="handle r" @onpointerdown="e => StartResize(e, ResizeDirection.Right)"></div>
+            }
+            
+            @if (CanResizeV)
+            {
+                <div class="handle t" @onpointerdown="e => StartResize(e, ResizeDirection.Top)"></div>
+                <div class="handle b" @onpointerdown="e => StartResize(e, ResizeDirection.Bottom)"></div>
             }
         </div>
     }
 </div>
+
+@code {
+
+    bool CanResizeH => (Field.ResizeAxis & ResizableAxis.Horizontal) != 0;
+    bool CanResizeV => (Field.ResizeAxis & ResizableAxis.Vertical) != 0;
+    bool CanResizeAll => Field.ResizeAxis == ResizableAxis.All;
+}

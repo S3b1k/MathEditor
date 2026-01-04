@@ -196,12 +196,12 @@ public partial class Canvas : ComponentBase
                     (newX, newY) = Snap((newX, newY));
                 }
                 
-                if (field.Width > BaseCellSize)
+                if (field.Width > field.MinWidth)
                     field.PosX = newX;
-                if (field.Height > BaseCellSize)
+                if (field.Height > field.MinHeight)
                     field.PosY = newY;
-                field.Width = Math.Max(BaseCellSize, newWidth);
-                field.Height = Math.Max(BaseCellSize, newHeight);
+                field.Width = Math.Max(field.MinWidth, newWidth);
+                field.Height = Math.Max(field.MinHeight, newHeight);
             }
             else if (field.IsDragging)
             {

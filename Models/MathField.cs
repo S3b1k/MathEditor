@@ -8,8 +8,10 @@ public class MathField : Field
 
     public MathField(double x, double y) : base(x, y)
     {
-        IsResizable = false;
-        Width = Canvas.BaseCellSize * 12;
+        ResizeAxis = ResizableAxis.Horizontal;
+        Width = Canvas.BaseCellSize * 8;
         Height = Canvas.BaseCellSize * 2;
+        MinWidth = Canvas.BaseCellSize * 8;
+        MinHeight = Canvas.BaseCellSize * 2;
     }
 }

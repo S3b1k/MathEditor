@@ -9,9 +9,10 @@ public abstract class Field(double x, double y)
     // Transform
     public double PosX { get; set; } = x;
     public double PosY { get; set; } = y;
-
     public double Width { get; set; } = Canvas.BaseCellSize * 6;
     public double Height { get; set; } = Canvas.BaseCellSize;
+    public double MinWidth = Canvas.BaseCellSize;
+    public double MinHeight = Canvas.BaseCellSize;
 
     public bool IsSelected { get; set; }
     public event Action? OnFieldDeselected;
@@ -24,8 +25,8 @@ public abstract class Field(double x, double y)
     public double DragOffsetY { get; set; }
 
     // Resizing
+    public ResizableAxis ResizeAxis { get; set; } = ResizableAxis.All;
     public ResizeDirection ResizeDir { get; set; }
-    public bool IsResizable { get; set; } = true;
     public bool IsResizing { get; set; }
     public double ResizeStartWidth { get; set; }
     public double ResizeStartHeight { get; set; }
