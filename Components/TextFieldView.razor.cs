@@ -17,8 +17,8 @@ public partial class TextFieldView : BaseFieldView<TextField>
     {
         Field.Text = await JS.InvokeAsync<string>("textField.getText", ContentRef);
         
-        var newHeight = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getHeight", ContentRef));
-        var newWidth = Canvas.ExpandSnap(await JS.InvokeAsync<double>("field.getWidth", ContentRef));
+        var newHeight = Canvas.SnapCeil(await JS.InvokeAsync<double>("field.getHeight", ContentRef));
+        var newWidth = Canvas.SnapCeil(await JS.InvokeAsync<double>("field.getWidth", ContentRef));
         
         Field.Height = newHeight > Field.Height ? newHeight : Field.Height;
         Field.Width = newWidth > Field.Width ? newWidth : Field.Width;

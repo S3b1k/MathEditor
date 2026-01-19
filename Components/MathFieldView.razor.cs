@@ -1,6 +1,5 @@
 using MathEditor.Models;
 using MathEditor.Pages;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace MathEditor.Components;
@@ -23,7 +22,7 @@ public partial class MathFieldView : BaseFieldView<MathField>
             Field.Latex = latex;
             await JS.InvokeVoidAsync("mathFieldInterop.setValue", ContentRef, latex);
             
-            var width = Canvas.ExpandSnap(await JS.InvokeAsync<double>("mathFieldInterop.getWidth", ContentRef));
+            var width = Canvas.SnapCeil(await JS.InvokeAsync<double>("mathFieldInterop.getWidth", ContentRef));
             width += Canvas.BaseCellSize * 4;
         
             Field.Width = Math.Max(Field.Width, width);
@@ -55,26 +54,7 @@ public partial class MathFieldView : BaseFieldView<MathField>
     [JSInvokable]
     public async Task OnMathChanged(string latex)
     {
-        if (latex.Contains('='))
-        {
-            var result = await EvaluateNumericAsync(); 
-            latex += result.HasValue ? result.Value : "err";
-        }
-        
         await UpdateLatex(latex);
-    }
-
-    private async void OnKeyDown(KeyboardEventArgs e)
-    {
-        try
-        {
-            if (e.Key == "Backspace" && Field.Latex.Contains('='))
-                await UpdateLatex(Field.Latex.Split('=')[0]);
-        }
-        catch (Exception _)
-        {
-            Console.WriteLine("Error");
-        }
     }
     #endregion
 

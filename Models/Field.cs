@@ -4,6 +4,28 @@ namespace MathEditor.Models;
 
 public abstract class Field(double x, double y)
 {
+    public enum ResizeDirection
+    {
+        TopLeft,
+        Top,
+        TopRight,
+        Right,
+        BottomRight,
+        Bottom,
+        BottomLeft,
+        Left
+    }
+
+    [Flags]
+    public enum ResizableAxis
+    {
+        None = 0,
+        Horizontal = 1,
+        Vertical = 2,
+        All = Horizontal | Vertical
+    }
+    
+    
     public Guid Id { get; } = Guid.NewGuid();
     
     // Transform

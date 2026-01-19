@@ -1,15 +1,14 @@
-@using MathEditor.Models
 @using MathEditor.Services
 @implements IDisposable;
 @inject Editor Editor;
 
 <div class="toolbar">
-        <button class="tool-button @(Editor.Mode == Enums.Pan ? "active" : "")" 
-                @onclick="() => Editor.SetMode(Enums.Pan)">Pan</button>
-        <button class="tool-button @(Editor.Mode == Enums.CreateTextField ? "active" : "")" 
-                @onclick="() => Editor.SetMode(Enums.CreateTextField)">New Text</button>
-        <button class="tool-button @(Editor.Mode == Enums.CreateMathField ? "active" : "")" 
-                @onclick="() => Editor.SetMode(Enums.CreateMathField)">New Expression</button>
+        <button class="tool-button @(Editor.Mode == Editor.EditorMode.Pan ? "active" : "")" 
+                @onclick="() => Editor.SetMode(Editor.EditorMode.Pan)">Pan</button>
+        <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateTextField ? "active" : "")" 
+                @onclick="() => Editor.SetMode(Editor.EditorMode.CreateTextField)">New Text</button>
+        <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateMathField ? "active" : "")" 
+                @onclick="() => Editor.SetMode(Editor.EditorMode.CreateMathField)">New Expression</button>
 </div>
 
 

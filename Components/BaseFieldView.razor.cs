@@ -43,7 +43,7 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     private Task StartEditing(MouseEventArgs e) => OnStartEditing.InvokeAsync(e);
     
     
-    private void StartResize(PointerEventArgs e, ResizeDirection direction)
+    private void StartResize(PointerEventArgs e, Field.ResizeDirection direction)
     { 
         Editor.BeginFieldResize(Field, direction, (e.ClientX, e.ClientY));
     }

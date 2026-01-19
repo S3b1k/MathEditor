@@ -5,8 +5,17 @@ namespace MathEditor.Services;
 
 public class Editor
 {
+    public enum EditorMode
+    {
+        Idle,
+        Pan,
+        CreateTextField,
+        CreateMathField
+    }
+    
+    
     public event Action? OnStateChanged;
-    public Enums Mode
+    public EditorMode Mode
     {
         get;
         private set
@@ -14,7 +23,7 @@ public class Editor
             field = value;
             NotifyStateChanged();
         }
-    } = Enums.Idle;
+    } = EditorMode.Idle;
     
     public List<Field> Fields { get; } = [];
     
@@ -23,19 +32,24 @@ public class Editor
     public int SelectionCount => SelectedFields.Count;
     
 
-    public void SetMode(Enums mode) => Mode = mode;
+    public void SetMode(EditorMode mode) => Mode = mode;
     
     
     #region Field Factory
 
-    private void CreateField(Field field)
+    private void CreateField(Field field, bool suppressModeSwitch = false)
     {
         Fields.Add(field);
         SelectField(field);
+        
+        if (!suppressModeSwitch)
+            SetMode(EditorMode.Idle);
     }
     
-    public void CreateTextField(double posX, double posY) => CreateField(new TextField(posX, posY));
-    public void CreateMathField(double posX, double posY) => CreateField(new MathField(posX, posY));
+    public void CreateTextField(double posX, double posY, bool suppressModeSwitch = false) 
+        => CreateField(new TextField(posX, posY), suppressModeSwitch);
+    public void CreateMathField(double posX, double posY, bool suppressModeSwitch = false) 
+        => CreateField(new MathField(posX, posY), suppressModeSwitch);
 
     #endregion
  
@@ -92,7 +106,7 @@ public class Editor
     }
 
 
-    public static void BeginFieldResize(Field field, ResizeDirection dir, (double x, double y) startPos)
+    public static void BeginFieldResize(Field field, Field.ResizeDirection dir, (double x, double y) startPos)
     {
         field.IsResizing = true;
         field.ResizeStartWidth = field.Width;
@@ -115,13 +129,13 @@ public class Editor
             switch (key)
             {
                 case "escape":
-                    SetMode(Enums.Idle);
+                    SetMode(EditorMode.Idle);
                     break;
                 case "t":
-                    SetMode(Enums.CreateTextField);
+                    SetMode(EditorMode.CreateTextField);
                     break;
                 case "m":
-                    SetMode(Enums.CreateMathField);
+                    SetMode(EditorMode.CreateMathField);
                     break;
             }
         }
