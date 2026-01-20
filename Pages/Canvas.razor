@@ -14,14 +14,43 @@
      @onwheel:preventDefault
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown">
+    
+    <svg class="grid @(Editor.Mode == Editor.EditorMode.Pan ? _panning ? "panning" : "pan" : "")" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Small Grid -->
+            <pattern id="smallGrid"
+                     width="@BaseCellSize"
+                     height="@BaseCellSize"
+                     patternUnits="userSpaceOnUse"
+                     patternTransform="translate(@Cam.PanX @Cam.PanY) scale(@Cam.Zoom)">
+                
+                <path d="M 0 0 L @BaseCellSize 0" fill="none" stroke="#999" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
+                <path d="M 0 0 L 0 @BaseCellSize" fill="none" stroke="#999" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
+            </pattern>
 
-    <div class="grid @(Editor.Mode == Editor.EditorMode.Pan ? _panning ? "panning" : "pan" : "")"
-         style="@GridStyle">
-    </div>
+            <!-- Big Grid -->
+            <pattern id="bigGrid"
+                     width="@(BaseCellSize * 5)"
+                     height="@(BaseCellSize * 5)"
+                     patternUnits="userSpaceOnUse"
+                     patternTransform="translate(@Cam.PanX @Cam.PanY) scale(@Cam.Zoom)">
+                
+                <rect width="@(BaseCellSize * 5)" height="@(BaseCellSize * 5)" fill="transparent" />
+
+                <path d="M 0 0 L @(BaseCellSize * 5) 0" fill="none" stroke="#666" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <path d="M 0 0 L 0 @(BaseCellSize * 5)" fill="none" stroke="#666" stroke-width="1" vector-effect="non-scaling-stroke"/>
+            </pattern>
+        </defs>
+
+        <!-- Zuerst das feine Grid, dann das große darüber (oder umgekehrt) -->
+        <rect width="100%" height="100%" fill="url(#smallGrid)" />
+        <rect width="100%" height="100%" fill="url(#bigGrid)" />
+    </svg>
+
     
     <div class="camera" style="@CameraStyle">
         @foreach (var field in Fields)
-            @FieldViewResolver.Resolve(field);
+            @FieldViewResolver.Resolve(field)
     </div>
     
     @if (_isSelecting || _isFadingSelection)

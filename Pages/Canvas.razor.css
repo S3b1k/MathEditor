@@ -5,30 +5,7 @@
     position: relative;
 }
 
-.grid {
-    --cell-size: 10px;
-    --pan-x: 0px;
-    --pan-y: 0px;
 
-    width: 100%;
-    height: 100%;
-    background-color: #ffffff;
-
-    background-image:
-            linear-gradient(to right, rgba(0, 0, 0, 0.1) 2px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 2px, transparent 1px),
-            linear-gradient(to right, rgba(0, 0, 0, 0.05) 2px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 2px, transparent 1px);
-
-    background-size:
-            calc(var(--cell-size) * 5) calc(var(--cell-size) * 5),
-            calc(var(--cell-size) * 5) calc(var(--cell-size) * 5),
-            var(--cell-size) var(--cell-size),
-            var(--cell-size) var(--cell-size);
-    
-
-    background-position: calc(var(--pan-x)) calc(var(--pan-y));
-}
 .grid.pan {
     cursor: grab;
 }

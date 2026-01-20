@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Principal;
 using MathEditor.Models;
 using MathEditor.Services;
 using Microsoft.AspNetCore.Components;
@@ -10,13 +11,16 @@ namespace MathEditor.Pages;
 public partial class Canvas : ComponentBase
 {
     #region Properties
+ 
+    public const double BaseCellSize = 18.9;
     
     #region styles
-
+    
     private string GridStyle =>
         $"--cell-size: {(BaseCellSize * Zoom).ToString(CultureInfo.InvariantCulture)}px;" +
         $"--pan-x: {Cam.PanX.ToString(CultureInfo.InvariantCulture)}px; " +
         $"--pan-y: {Cam.PanY.ToString(CultureInfo.InvariantCulture)}px; ";
+    
     
     private string CameraStyle =>
         "position: absolute;" +
@@ -34,8 +38,6 @@ public partial class Canvas : ComponentBase
         $"height:{Math.Abs(_selectCurrentY - _selectStartY).ToString(CultureInfo.InvariantCulture)}px;";
     
     #endregion
-    
-    public const double BaseCellSize = 18.9;
     
     // Zooming
     private double Zoom => Cam.Zoom;
@@ -88,6 +90,8 @@ public partial class Canvas : ComponentBase
     protected override void OnInitialized()
     {
         Editor.OnFieldClicked += () => _isInteractingWithField = true;
+
+        JS.InvokeVoidAsync("mathEditor.registerRatioWatcher", DotNetObjectReference.Create(this));
     }
     
     #region Events
