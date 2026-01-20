@@ -3,6 +3,8 @@
 @inject Editor Editor;
 
 <div class="toolbar">
+        <button class="tool-button" 
+                @onclick="() => showContextMenu = !showContextMenu">Menu</button>
         <button class="tool-button @(Editor.Mode == Editor.EditorMode.Pan ? "active" : "")" 
                 @onclick="() => Editor.SetMode(Editor.EditorMode.Pan)">Pan</button>
         <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateTextField ? "active" : "")" 
@@ -11,8 +13,14 @@
                 @onclick="() => Editor.SetMode(Editor.EditorMode.CreateMathField)">New Expression</button>
 </div>
 
+<div class="context-menu @(showContextMenu ? "visible" : "")">
+        <button><img src="" alt="open-icon"/> Open File</button>
+        <button>Save File</button>
+</div>
+
 
 @code {
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
+        private bool showContextMenu;
 }
