@@ -3,19 +3,34 @@
 @inject Editor Editor;
 
 <div class="toolbar">
-        <button class="tool-button" 
-                @onclick="() => showContextMenu = !showContextMenu">Menu</button>
-        <button class="tool-button @(Editor.Mode == Editor.EditorMode.Pan ? "active" : "")" 
-                @onclick="() => Editor.SetMode(Editor.EditorMode.Pan)">Pan</button>
-        <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateTextField ? "active" : "")" 
-                @onclick="() => Editor.SetMode(Editor.EditorMode.CreateTextField)">New Text</button>
-        <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateMathField ? "active" : "")" 
-                @onclick="() => Editor.SetMode(Editor.EditorMode.CreateMathField)">New Expression</button>
+        <div class="left">
+                <button class="menu-button @(showContextMenu ? "visible" : "")" title="Open Menu"
+                        @onclick="() => showContextMenu = !showContextMenu">
+                        <img src="icons/icon_menu.svg" alt="menu-icon"/>
+                        <span class="title">MathEditor</span>
+                </button>  
+        </div>
+
+
+        <div class="center">
+                <button class="tool-button @(Editor.Mode == Editor.EditorMode.Pan ? "active" : "")" title="Pan"
+                        @onclick="() => Editor.SetMode(Editor.EditorMode.Pan)">
+                        <img src="icons/icon_pan.svg" alt="pan-icon"/>
+                </button>
+                <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateTextField ? "active" : "")" title="Create New TextField"
+                        @onclick="() => Editor.SetMode(Editor.EditorMode.CreateTextField)">
+                        <img src="icons/icon_create-text.svg" alt="crate-text-icon"/>
+                </button>
+                <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateMathField ? "active" : "")" title="Create New MathField"
+                        @onclick="() => Editor.SetMode(Editor.EditorMode.CreateMathField)">
+                        <img src="icons/icon_create-math.svg" alt="create-math-icon"/>
+                </button>
+        </div>
 </div>
 
 <div class="context-menu @(showContextMenu ? "visible" : "")">
-        <button><img src="" alt="open-icon"/> Open File</button>
-        <button>Save File</button>
+        <button><img src="icons/icon_open-file.svg" alt="open-icon"/> Open File</button>
+        <button><img src="icons/icon_save-file.svg" alt="save-icon"/> Save File</button>
 </div>
 
 

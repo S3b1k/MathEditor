@@ -1,23 +1,47 @@
 .toolbar {
     position: absolute;
+    left: 0;
+    right: 0;
     z-index: 1000;
     margin: 16px;
     height: 48px;
+    
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+}
+.toolbar .left {
+    z-index: 2;
+    height: 100%;
+}
+.toolbar .center {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    height: 100%;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.tool-button {
+.tool-button, .menu-button {
     margin-right: .5rem;
     border: none;
     border-radius: 10px;
-    min-width: 4rem;
+    min-width: 48px;
     height: 100%;
 }
 
-.tool-button.active {
+.tool-button.active, .menu-button.active {
     background: darkgray;
+}
+
+.tool-button img, .menu-button img {
+    width: 25px;
+    height: 25px;
+    margin: 0;
+    
+    pointer-events: none;
 }
 
 .context-menu {
@@ -61,4 +85,34 @@
 }
 .context-menu button:hover {
     background-color: lightgray;
-} 
+}
+
+
+.menu-button {
+    display: flex;
+    padding: 11px;
+    width: 48px;
+    transition: width 0.1s ease-out;
+}
+.menu-button.visible {
+    width: 250px;
+}
+.menu-button span {
+    display: none;
+    opacity: 0;
+    
+    transition: opacity 0.5s linear;
+}
+.menu-button.visible span {
+    display: inline;
+    opacity: 1;
+    width: 100%;
+    font-size: 15pt;
+}
+
+
+img {
+    width: 17px;
+    height: 17px;
+    margin-right: 5px;
+}
