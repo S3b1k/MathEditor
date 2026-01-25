@@ -17,25 +17,25 @@ public partial class Canvas : ComponentBase
     #region styles
     
     private string GridStyle =>
-        $"--cell-size: {(BaseCellSize * Zoom).ToString(CultureInfo.InvariantCulture)}px;" +
-        $"--pan-x: {Cam.PanX.ToString(CultureInfo.InvariantCulture)}px; " +
-        $"--pan-y: {Cam.PanY.ToString(CultureInfo.InvariantCulture)}px; ";
+        $"--cell-size: {F(BaseCellSize * Zoom)}px;" +
+        $"--pan-x: {F(Cam.PanX)}px; " +
+        $"--pan-y: {F(Cam.PanY)}px; ";
     
     
     private string CameraStyle =>
         "position: absolute;" +
         "left: 0;" +
         "top: 0;" +
-        $"transform: translate({Cam.PanX.ToString(CultureInfo.InvariantCulture)}px, " +
-        $"                     {Cam.PanY.ToString(CultureInfo.InvariantCulture)}px) " +
-        $"scale({Zoom.ToString(CultureInfo.InvariantCulture)});" +
+        $"transform: translate({F(Cam.PanX)}px, " +
+        $"                     {F(Cam.PanY)}px) " +
+        $"scale({F(Zoom)});" +
         "transform-origin: 0 0;";
     
     private string SelectionBoxStyle =>
-        $"left:{Math.Min(_selectStartX, _selectCurrentX).ToString(CultureInfo.InvariantCulture)}px;" +
-        $"top:{Math.Min(_selectStartY, _selectCurrentY).ToString(CultureInfo.InvariantCulture)}px;" +
-        $"width:{Math.Abs(_selectCurrentX - _selectStartX).ToString(CultureInfo.InvariantCulture)}px;" +
-        $"height:{Math.Abs(_selectCurrentY - _selectStartY).ToString(CultureInfo.InvariantCulture)}px;";
+        $"left:{F(Math.Min(_selectStartX, _selectCurrentX))}px;" +
+        $"top:{F(Math.Min(_selectStartY, _selectCurrentY))}px;" +
+        $"width:{F(Math.Abs(_selectCurrentX - _selectStartX))}px;" +
+        $"height:{F(Math.Abs(_selectCurrentY - _selectStartY))}px;";
     
     #endregion
     
@@ -65,6 +65,9 @@ public partial class Canvas : ComponentBase
 
     
     #region Helper Methods
+    private static string F(double v)
+        => v.ToString(CultureInfo.InvariantCulture);
+    
     private static (double x, double y) Snap((double x, double y) val) => (Snap(val.x), Snap(val.y));
     private static double Snap(double value) => Math.Round(value / BaseCellSize) * BaseCellSize;
     

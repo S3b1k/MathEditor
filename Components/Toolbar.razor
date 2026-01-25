@@ -20,10 +20,12 @@
                 <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateTextField ? "active" : "")" title="Create New TextField"
                         @onclick="() => Editor.SetMode(Editor.EditorMode.CreateTextField)">
                         <img src="icons/icon_create-text.svg" alt="crate-text-icon"/>
+                        <span class="shortcut">T</span>
                 </button>
                 <button class="tool-button @(Editor.Mode == Editor.EditorMode.CreateMathField ? "active" : "")" title="Create New MathField"
                         @onclick="() => Editor.SetMode(Editor.EditorMode.CreateMathField)">
                         <img src="icons/icon_create-math.svg" alt="create-math-icon"/>
+                        <span class="shortcut">M</span>
                 </button>
         </div>
 </div>

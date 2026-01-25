@@ -1,10 +1,11 @@
+/* Toolbar */
 .toolbar {
     position: absolute;
     left: 0;
     right: 0;
     z-index: 1000;
     margin: 16px;
-    height: 48px;
+    height: 40px;
     
     display: flex;
     align-items: center;
@@ -22,40 +23,96 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    
+    background: white;
+    border-radius: 10px;
+    
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
 }
 
+
+/* Toolbar Button */
 .tool-button, .menu-button {
-    margin-right: .5rem;
+    margin-right: 5px;
     border: none;
     border-radius: 10px;
-    min-width: 48px;
-    height: 100%;
+    width: 40px;
+    height: 40px;
+    outline: none;
+    background: white;
+    
+}
+.tool-button:last-child {
+    margin-right: 0;
+}
+
+.tool-button:hover, .menu-button:hover {
+    background: #fff5ee;
 }
 
 .tool-button.active, .menu-button.active {
-    background: darkgray;
+    background: #ffe2d7;
 }
 
 .tool-button img, .menu-button img {
-    width: 25px;
-    height: 25px;
-    margin: 0;
+    width: 22px;
+    height: 22px;
     
     pointer-events: none;
 }
 
+.tool-button .shortcut {
+    position: absolute;
+    font-size: 7pt;
+    color: gray;
+    bottom: 2px;
+    margin-right: 1px;
+}
+
+
+/* Menu Button */
+.menu-button {
+    display: flex;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
+
+    transition: width 0.15s ease-out;
+}
+.menu-button img {
+    margin-left: 3px;
+    margin-top: 8px;
+}
+
+.menu-button.visible {
+    width: 220px;
+}
+.menu-button span {
+    opacity: 0;
+    visibility: hidden;
+    margin-top: 6px;
+    font-size: 14pt;
+    
+    transition: opacity 0.2s linear;
+}
+.menu-button.visible span {
+    opacity: 1;
+    width: 100%;
+    visibility: visible;
+}
+
+
+/* Context Menu */
 .context-menu {
     visibility: hidden;
     opacity: 0;
     scale: 1 0;
     transform-origin: top;
     
-    width: 250px;
+    width: 220px;
     position: absolute;
     z-index: 1000;
     margin: 16px;
     padding: 5px;
-    top: 64px;
+    top: 50px;
     
     display: flex;
     flex-direction: column;
@@ -75,43 +132,20 @@
 }
 
 .context-menu button {
-    height: 40px;
+    height: 32px;
     padding: 0 10px;
     
     text-align: start;
+    font-size: 11pt;
     border: none;
     border-radius: 10px;
-    background-color: white;
+    background: white;
 }
 .context-menu button:hover {
-    background-color: lightgray;
+    background: #fff5ee;
 }
 
-
-.menu-button {
-    display: flex;
-    padding: 11px;
-    width: 48px;
-    transition: width 0.1s ease-out;
-}
-.menu-button.visible {
-    width: 250px;
-}
-.menu-button span {
-    display: none;
-    opacity: 0;
-    
-    transition: opacity 0.5s linear;
-}
-.menu-button.visible span {
-    display: inline;
-    opacity: 1;
-    width: 100%;
-    font-size: 15pt;
-}
-
-
-img {
+.context-menu img {
     width: 17px;
     height: 17px;
     margin-right: 5px;
