@@ -1,4 +1,5 @@
 using System.Text.Json;
+using MathEditor.Components;
 using MathEditor.Models;
 using MathEditor.Pages;
 using Microsoft.AspNetCore.Components;
@@ -9,6 +10,8 @@ namespace MathEditor.Services;
 
 public class Editor
 {
+    private static IJSRuntime? JS { get; set; }
+    
     public enum EditorMode
     {
         Idle,
@@ -35,12 +38,24 @@ public class Editor
     public List<Field> SelectedFields { get; } = [];
     public int SelectionCount => SelectedFields.Count;
 
-    public static event Action? OnEditorSave;
     
-
     public void SetMode(EditorMode mode) => Mode = mode;
     
     
+    public static SaveFileDialog? SaveDialog { get; set; }
+
+    public static bool IsDialogOpen => SaveDialog?.IsOpen ?? false;
+
+    public static bool IsDark { get; private set; }
+
+
+    public Editor(IJSRuntime js)
+    {
+        JS = js;
+    }
+    
+
+
     #region Field Factory
 
     private void CreateField(Field field, bool suppressModeSwitch = false)
@@ -127,11 +142,18 @@ public class Editor
     
     
     #region Saving & Loading
+    
+    public static void ShowSaveDialog() => 
+        SaveDialog?.Open(/* Saved Filename */);   
+    
 
-    public static void SaveFile() => OnEditorSave?.Invoke();
-    public static async Task SaveFile(IJSRuntime js, string data)
+    public static async Task SaveFile(string data)
     {
-        await js.InvokeVoidAsync("mathEditor.saveFile", "New Document.mxe", data);
+        await JS.InvokeVoidAsync(
+            "mathEditor.saveFile", 
+            $"{SaveDialog?.Filename ?? SaveFileDialog.DefaultFilename}.mxe", 
+            data
+        );
     }
     
     public static async Task LoadFile(ChangeEventArgs e)
@@ -143,10 +165,28 @@ public class Editor
     #endregion
     
     
+    #region Theme Toggling
+
+    public static async Task ToggleTheme()
+    {
+        IsDark = !IsDark;
+        await JS.InvokeVoidAsync("mathEditor.toggleTheme", IsDark ? "dark" : "light");
+    }
+    
+    #endregion
+    
+    
     
     [JSInvokable]
     public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
     {
+        if (IsDialogOpen)
+        {
+            if (key == "escape")
+                SaveDialog?.Close();
+            return;
+        }
+        
         if (SelectionCount == 0)
         {
             switch (key)

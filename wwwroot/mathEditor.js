@@ -33,6 +33,25 @@ window.mathEditor = {
         a.click();
         
         URL.revokeObjectURL(url);
+    },
+    saveFilePicker: async function (content) {
+        const opts = {
+            types: [{
+                description: "Math Editor File",
+                accept: { "application/octet-stream": [".mxe"] }
+            }]
+        };
+
+        // Show Save As dialog
+        const handle = await window.showSaveFilePicker(opts);
+
+        // Write file
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+    },
+    toggleTheme: function (theme) {
+        document.documentElement.setAttribute('data-theme', theme);
     }
 };
 

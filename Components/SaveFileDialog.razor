@@ -1,0 +1,13 @@
+<div class="backdrop @(IsOpen ? "visible" : "")">
+    <div class="dialog @(IsOpen ? "visible" : "")">
+        <h3 class="title">Save File</h3>
+        
+        <label>Filename:</label>
+        <input type="text" @bind="Filename" />
+        
+        <div class="buttons">
+            <button class="simple-button" @onclick="OnSaveClicked">Save</button>
+            <button class="simple-button" @onclick="Close">Cancel</button>
+        </div>
+    </div>
+</div>

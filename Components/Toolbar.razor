@@ -32,7 +32,8 @@
 
 <div class="context-menu @(showContextMenu ? "visible" : "")">
         <button><img src="icons/icon_open-file.svg" alt="open-icon"/> Open File</button>
-        <button @onclick="Editor.SaveFile"><img src="icons/icon_save-file.svg" alt="save-icon"/> Save File</button>
+        <button @onclick="Editor.ShowSaveDialog"><img src="icons/icon_save-file.svg" alt="save-icon"/> Save File</button>
+        <button @onclick="Editor.ToggleTheme"><img src="icons/icon_save-file.svg" alt="toggle-theme"/> Toggle Theme</button>
 </div>
 
 

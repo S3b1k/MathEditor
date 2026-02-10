@@ -14,6 +14,8 @@
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown">
     
+    
+    @* Grid *@
     <svg class="grid @(Editor.Mode == Editor.EditorMode.Pan ? _panning ? "panning" : "pan" : "")" 
          width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -45,15 +47,22 @@
     </svg>
 
     
+    @* View Handling *@
     <div class="camera" style="@CameraStyle">
         @foreach (var field in Fields)
             @FieldViewResolver.Resolve(field)
     </div>
     
+    
+    @* Selection Box handling *@
     @if (_isSelecting || _isFadingSelection)
     {
         <div class="selection-box @(_isFadingSelection ? "fade-out" : "")"
              style="@SelectionBoxStyle">
         </div>
     }
+    
+    
+    @* Save Dialog *@
+    <SaveFileDialog @ref="Editor.SaveDialog" OnSave="SaveFile"></SaveFileDialog>
 </div>

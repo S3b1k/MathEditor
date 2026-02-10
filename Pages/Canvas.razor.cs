@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Principal;
 using System.Text.Json;
+using MathEditor.Components;
 using MathEditor.Models;
 using MathEditor.Services;
 using Microsoft.AspNetCore.Components;
@@ -66,6 +67,7 @@ public partial class Canvas : ComponentBase
 
     
     #region Helper Methods
+    
     private static string F(double v)
         => v.ToString(CultureInfo.InvariantCulture);
     
@@ -87,30 +89,32 @@ public partial class Canvas : ComponentBase
         Cam.ResetVelocity();
     }
 
-
     #endregion
     
     
     protected override void OnInitialized()
     {
-        Editor.OnEditorSave += SaveFile;
         Editor.OnFieldClicked += () => _isInteractingWithField = true;
 
         JS.InvokeVoidAsync("mathEditor.registerRatioWatcher", DotNetObjectReference.Create(this));
     }
 
+    
+    #region Saving / Loading
+    
     private async void SaveFile()
     {
         try
         {
-            await Editor.SaveFile(JS, SerializeFields());
+            await Editor.SaveFile(SerializeFields());
         }
         catch (Exception e)
         {
             Console.Error.WriteLine(e);
         }
     }
-
+    
+    
     private string SerializeFields()
     {
         var saveList = Fields.Select(f => f.ToSaveData()).ToList();
@@ -142,14 +146,15 @@ public partial class Canvas : ComponentBase
 
         return result;
     }
-
+    
+    #endregion
     
     
     #region Events
     
     private void OnPointerDown(PointerEventArgs e)
     {
-        if (_isInteractingWithField)
+        if (Editor.IsDialogOpen || _isInteractingWithField)
             return;
 
         if (e.Button == 0)
@@ -189,6 +194,9 @@ public partial class Canvas : ComponentBase
 
     private void OnPointerMove(PointerEventArgs e)
     {
+        if (Editor.IsDialogOpen)
+            return;
+        
         if (Editor.Mode == Editor.EditorMode.Pan && _panning)
         {
             var dx = e.ClientX - _lastX;
@@ -279,6 +287,9 @@ public partial class Canvas : ComponentBase
 
     private async Task OnPointerUp(PointerEventArgs e)
     {
+        if (Editor.IsDialogOpen)
+            return;
+        
         if (Editor.Mode == Editor.EditorMode.Pan)
             Editor.SetMode(_previousMode);
         _panning = false;
@@ -305,6 +316,9 @@ public partial class Canvas : ComponentBase
 
     private void OnWheel(WheelEventArgs e)
     {
+        if (Editor.IsDialogOpen)
+            return;
+        
         if (e.CtrlKey)
         {
             const double zoomSpeed = 0.002;
@@ -326,6 +340,9 @@ public partial class Canvas : ComponentBase
     
     private void OnKeyDown(KeyboardEventArgs e)
     {
+        if (Editor.IsDialogOpen)
+            return;
+        
         if (Editor.SelectionCount > 0)
         {
             var step = e.CtrlKey ? 1 : BaseCellSize;

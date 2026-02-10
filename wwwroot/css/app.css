@@ -110,3 +110,58 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+
+:root {
+    --color-primary: #ffa37d;
+    --color-primary-hover: #bd7d5a;
+    --color-select: #007bff;
+    
+    --color-background: #fff;
+    
+    --color-text: #000;
+    --color-text-light: #fff;
+    --color-text-dark: #000;
+}
+
+[data-theme="dark"] {
+    --color-background: #000;
+    
+    --color-text: #fff;
+}
+
+
+.simple-button {
+    padding: 7px 10px;
+    
+    border-radius: 10px;
+    border: none;
+    
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    
+    transition: background-color 0.1s ease, scale 0.1s ease;
+}
+.simple-button:hover {
+    background-color: var(--color-primary-hover);
+    scale: 1.025;
+}
+.simple-button:active {
+    scale: 0.93;
+}
+
+
+input {
+    padding: 5px;
+    font-size: 13pt;
+    
+    border: 1px solid lightgray;
+    border-radius: 10px;
+
+    transition: box-shadow 100ms ease, border-color 100ms ease;
+}
+input:focus {
+    outline: none;
+    border-color: var(--color-select);
+    box-shadow: 0 0 0 2px var(--color-select);
+}
