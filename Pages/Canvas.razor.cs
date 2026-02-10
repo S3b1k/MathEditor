@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Security.Principal;
+using System.Text.Json;
 using MathEditor.Models;
 using MathEditor.Services;
 using Microsoft.AspNetCore.Components;
@@ -92,10 +93,57 @@ public partial class Canvas : ComponentBase
     
     protected override void OnInitialized()
     {
+        Editor.OnEditorSave += SaveFile;
         Editor.OnFieldClicked += () => _isInteractingWithField = true;
 
         JS.InvokeVoidAsync("mathEditor.registerRatioWatcher", DotNetObjectReference.Create(this));
     }
+
+    private async void SaveFile()
+    {
+        try
+        {
+            await Editor.SaveFile(JS, SerializeFields());
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+        }
+    }
+
+    private string SerializeFields()
+    {
+        var saveList = Fields.Select(f => f.ToSaveData()).ToList();
+        return JsonSerializer.Serialize(saveList, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+    }
+    
+    public List<Field> DeserializeFields(string json)
+    {
+        var list = JsonSerializer.Deserialize<List<FieldSaveData>>(json)!;
+        var result = new List<Field>();
+
+        foreach (var f in list)
+        {
+            Field field = f.Type switch
+            {
+                "text" => new TextField(f.PosX, f.PosY) { Text = f.Content },
+                "math" => new MathField(f.PosX, f.PosY) { Latex = f.Content },
+                _ => throw new Exception($"Unknown field type: {f.Type}")
+            };
+
+            field.Width = f.Width;
+            field.Height = f.Height;
+
+            result.Add(field);
+        }
+
+        return result;
+    }
+
+    
     
     #region Events
     

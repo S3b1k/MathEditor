@@ -1,4 +1,8 @@
+using System.Text.Json;
 using MathEditor.Models;
+using MathEditor.Pages;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 namespace MathEditor.Services;
@@ -30,6 +34,8 @@ public class Editor
     public event Action? OnFieldClicked;
     public List<Field> SelectedFields { get; } = [];
     public int SelectionCount => SelectedFields.Count;
+
+    public static event Action? OnEditorSave;
     
 
     public void SetMode(EditorMode mode) => Mode = mode;
@@ -117,6 +123,23 @@ public class Editor
         field.ResizeStartPosY = field.PosY;
         field.ResizeDir = dir;
     }
+    #endregion
+    
+    
+    #region Saving & Loading
+
+    public static void SaveFile() => OnEditorSave?.Invoke();
+    public static async Task SaveFile(IJSRuntime js, string data)
+    {
+        await js.InvokeVoidAsync("mathEditor.saveFile", "New Document.mxe", data);
+    }
+    
+    public static async Task LoadFile(ChangeEventArgs e)
+    {
+        Console.WriteLine("asdf");
+    }
+
+    
     #endregion
     
     

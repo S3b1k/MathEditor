@@ -59,4 +59,6 @@ public abstract class Field(double x, double y)
 
 
     public void NotifyFieldDeselected() => OnFieldDeselected?.Invoke();
+
+    public abstract FieldSaveData ToSaveData();
 }
