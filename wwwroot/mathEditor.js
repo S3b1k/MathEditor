@@ -34,21 +34,22 @@ window.mathEditor = {
         
         URL.revokeObjectURL(url);
     },
-    saveFilePicker: async function (content) {
-        const opts = {
-            types: [{
-                description: "Math Editor File",
-                accept: { "application/octet-stream": [".mxe"] }
-            }]
-        };
-
-        // Show Save As dialog
-        const handle = await window.showSaveFilePicker(opts);
-
-        // Write file
-        const writable = await handle.createWritable();
-        await writable.write(content);
-        await writable.close();
+    openFilePicker: function (element) {
+        element.click();
+    },
+    readFile: async function (element) {
+        return new Promise((resolve, reject) => {
+            const file = element.files[0];
+            if (!file) {
+                resolve(null);
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsText(file);
+        })
     },
     toggleTheme: function (theme) {
         document.documentElement.setAttribute('data-theme', theme);

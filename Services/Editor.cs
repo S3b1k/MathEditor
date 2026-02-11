@@ -1,7 +1,6 @@
 using System.Text.Json;
 using MathEditor.Components;
 using MathEditor.Models;
-using MathEditor.Pages;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
@@ -10,17 +9,19 @@ namespace MathEditor.Services;
 
 public class Editor
 {
+    public enum EditorMode
+        {
+            Idle,
+            Pan,
+            CreateTextField,
+            CreateMathField
+        }
+    
+    
     private static IJSRuntime? JS { get; set; }
     
-    public enum EditorMode
-    {
-        Idle,
-        Pan,
-        CreateTextField,
-        CreateMathField
-    }
     
-    
+    #region State Handling
     public event Action? OnStateChanged;
     public EditorMode Mode
     {
@@ -32,22 +33,27 @@ public class Editor
         }
     } = EditorMode.Idle;
     
+    public void SetMode(EditorMode mode) => Mode = mode;
+    #endregion
+    
+    
+    #region Field Properties
     public List<Field> Fields { get; } = [];
     
     public event Action? OnFieldClicked;
     public List<Field> SelectedFields { get; } = [];
     public int SelectionCount => SelectedFields.Count;
-
-    
-    public void SetMode(EditorMode mode) => Mode = mode;
+    #endregion
     
     
+    #region Save Dialog
     public static SaveFileDialog? SaveDialog { get; set; }
 
     public static bool IsDialogOpen => SaveDialog?.IsOpen ?? false;
 
     public static bool IsDark { get; private set; }
-
+    #endregion
+    
 
     public Editor(IJSRuntime js)
     {
@@ -155,10 +161,36 @@ public class Editor
             data
         );
     }
-    
-    public static async Task LoadFile(ChangeEventArgs e)
+
+    public static async Task OpenFilePicker(ElementReference fileInput)
     {
-        Console.WriteLine("asdf");
+        await JS.InvokeVoidAsync("mathEditor.openFilePicker", fileInput);
+    }
+    
+    public async Task LoadFile(ChangeEventArgs e, ElementReference fileInput)
+    {
+        var content = await JS.InvokeAsync<string>("mathEditor.readFile", fileInput);
+        DeserializeFields(content);
+    }
+    
+    private void DeserializeFields(string json)
+    {
+        var list = JsonSerializer.Deserialize<List<FieldSaveData>>(json)!;
+
+        foreach (var f in list)
+        {
+            Field field = f.Type switch
+            {
+                "text" => new TextField(f.PosX, f.PosY) { Text = f.Content },
+                "math" => new MathField(f.PosX, f.PosY) { Latex = f.Content },
+                _ => throw new Exception($"Unknown field type: {f.Type}")
+            };
+
+            field.Width = f.Width;
+            field.Height = f.Height;
+
+            CreateField(field);
+        }
     }
 
     
@@ -169,6 +201,8 @@ public class Editor
 
     public static async Task ToggleTheme()
     {
+        if (JS == null) return;
+        
         IsDark = !IsDark;
         await JS.InvokeVoidAsync("mathEditor.toggleTheme", IsDark ? "dark" : "light");
     }
