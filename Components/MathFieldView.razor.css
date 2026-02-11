@@ -3,6 +3,8 @@
     background:transparent;
     border: none;
     outline: none;
+    
+    color: var(--color-text);
 }
 .field.selected > .math-content{
     cursor: default;
