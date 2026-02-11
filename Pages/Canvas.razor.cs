@@ -1,7 +1,5 @@
 using System.Globalization;
-using System.Security.Principal;
 using System.Text.Json;
-using MathEditor.Components;
 using MathEditor.Models;
 using MathEditor.Services;
 using Microsoft.AspNetCore.Components;
@@ -17,12 +15,6 @@ public partial class Canvas : ComponentBase
     public const double BaseCellSize = 18.9;
     
     #region styles
-    
-    private string GridStyle =>
-        $"--cell-size: {F(BaseCellSize * Zoom)}px;" +
-        $"--pan-x: {F(Cam.PanX)}px; " +
-        $"--pan-y: {F(Cam.PanY)}px; ";
-    
     
     private string CameraStyle =>
         "position: absolute;" +
@@ -122,29 +114,6 @@ public partial class Canvas : ComponentBase
         {
             WriteIndented = true
         });
-    }
-    
-    public List<Field> DeserializeFields(string json)
-    {
-        var list = JsonSerializer.Deserialize<List<FieldSaveData>>(json)!;
-        var result = new List<Field>();
-
-        foreach (var f in list)
-        {
-            Field field = f.Type switch
-            {
-                "text" => new TextField(f.PosX, f.PosY) { Text = f.Content },
-                "math" => new MathField(f.PosX, f.PosY) { Latex = f.Content },
-                _ => throw new Exception($"Unknown field type: {f.Type}")
-            };
-
-            field.Width = f.Width;
-            field.Height = f.Height;
-
-            result.Add(field);
-        }
-
-        return result;
     }
     
     #endregion

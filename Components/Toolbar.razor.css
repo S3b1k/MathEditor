@@ -3,11 +3,12 @@
     position: absolute;
     left: 0;
     right: 0;
-    z-index: 1000;
     margin: 16px;
     height: 40px;
     
+    z-index: 1000;
     display: flex;
+    
     align-items: center;
 }
 .toolbar .left {
@@ -23,8 +24,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    
-    background: white;
+
+    background-color: var(--color-bg);
     border-radius: 10px;
     
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
@@ -34,12 +35,14 @@
 /* Toolbar Button */
 .tool-button, .menu-button {
     margin-right: 5px;
-    border: none;
-    border-radius: 10px;
     width: 40px;
     height: 40px;
+    
+    border: none;
+    border-radius: 10px;
     outline: none;
-    background: white;
+    
+    background-color: var(--color-bg);
     
 }
 .tool-button:last-child {
@@ -47,11 +50,11 @@
 }
 
 .tool-button:hover, .menu-button:hover {
-    background: #fff5ee;
+    background: var(--color-menu-btn-hover);
 }
 
 .tool-button.active, .menu-button.active {
-    background: #ffe2d7;
+    background: var(--color-menu-btn-active);
 }
 
 .tool-button img, .menu-button img {
@@ -64,15 +67,17 @@
 .tool-button .shortcut {
     position: absolute;
     font-size: 7pt;
-    color: gray;
     bottom: 2px;
     margin-right: 1px;
+    
+    color: gray;
 }
 
 
 /* Menu Button */
 .menu-button {
     display: flex;
+       
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
 
     transition: width 0.15s ease-out;
@@ -87,66 +92,78 @@
 }
 .menu-button span {
     opacity: 0;
-    visibility: hidden;
     margin-top: 6px;
+    
     font-size: 14pt;
+    visibility: hidden;
     
     transition: opacity 0.2s linear;
 }
 .menu-button.visible span {
-    opacity: 1;
     width: 100%;
+    
+    opacity: 1;
     visibility: visible;
+    
+    color: var(--color-text);
 }
 
 
 /* Context Menu */
 .context-menu {
-    visibility: hidden;
-    opacity: 0;
     scale: 1 0;
     transform-origin: top;
-    
     width: 220px;
     position: absolute;
-    z-index: 1000;
     margin: 16px;
     padding: 5px;
     top: 50px;
     
+    visibility: hidden;
+    opacity: 0;
+    
+    z-index: 1000;
     display: flex;
     flex-direction: column;
     
     border: none;
     border-radius: 10px;
-    background-color: white;
+    background-color: var(--color-bg);
     
     transition: opacity 0.1s linear, scale 0.15s ease-out;
 }
 .context-menu.visible {
+    scale: 1;
+    
     visibility: visible;
     opacity: 1;
-    scale: 1;
 
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
 }
 
 .context-menu button {
+    display: flex;
+    align-items: center;
+    
     height: 32px;
     padding: 0 10px;
     
+    color: var(--color-text);
     text-align: start;
     font-size: 11pt;
+    
     border: none;
     border-radius: 10px;
-    background: white;
+    background: var(--color-bg);
 }
 .context-menu button:hover {
-    background: #fff5ee;
+    background: var(--color-menu-btn-hover);
 }
 
-.context-menu img {
+.context-menu img, svg {
     width: 17px;
     height: 17px;
     margin-right: 5px;
+    
+    color: var(--color-fg);
 }

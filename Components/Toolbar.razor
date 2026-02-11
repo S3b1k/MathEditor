@@ -31,14 +31,30 @@
 </div>
 
 <div class="context-menu @(showContextMenu ? "visible" : "")">
-        <button><img src="icons/icon_open-file.svg" alt="open-icon"/> Open File</button>
-        <button @onclick="Editor.ShowSaveDialog"><img src="icons/icon_save-file.svg" alt="save-icon"/> Save File</button>
-        <button @onclick="Editor.ToggleTheme"><img src="icons/icon_save-file.svg" alt="toggle-theme"/> Toggle Theme</button>
+        <input type="file" @ref="fileInput" style="display:none"
+               @onchange="e => Editor.LoadFile(e, fileInput)" />
+        
+        <button @onclick="_ => Editor.OpenFilePicker(fileInput)">
+                <img src="icons/icon_open-file.svg" alt="open-file"/>
+                Open File
+        </button>
+        <button @onclick="Editor.ShowSaveDialog">
+                <img src="icons/icon_save-file.svg" alt="save-file"/>
+                Save File
+        </button>
+        <button @onclick="Editor.ToggleTheme">
+                <img src="icons/icon_save-file.svg" alt="toggle-theme"/>
+                Toggle Theme
+        </button>
 </div>
 
 
 @code {
+        private bool showContextMenu;
+
+        private ElementReference fileInput;
+        private string? fileContent;
+        
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
-        private bool showContextMenu;
 }

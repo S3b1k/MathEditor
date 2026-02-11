@@ -117,7 +117,13 @@ code {
     --color-primary-hover: #bd7d5a;
     --color-select: #007bff;
     
-    --color-background: #fff;
+    --color-menu-btn-hover: #fff5ee;
+    --color-menu-btn-active: #ffe2d7;
+
+    --color-fg: #000;
+    --color-bg: #fff;
+    --color-grid-bg: #fff;
+    --color-grid: rgba(0, 0, 0, 0.2);
     
     --color-text: #000;
     --color-text-light: #fff;
@@ -125,7 +131,10 @@ code {
 }
 
 [data-theme="dark"] {
-    --color-background: #000;
+    --color-fg: #fff;
+    --color-bg: #232329;
+    --color-grid-bg: #121212;
+    --color-grid: rgba(255, 255, 255, 0.2);
     
     --color-text: #fff;
 }
