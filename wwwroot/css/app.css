@@ -122,6 +122,7 @@ code {
 
     --color-fg: #000;
     --color-bg: #fff;
+    --color-bg-2: #d0d0d0;
     --color-grid-bg: #fff;
     --color-grid: rgba(0, 0, 0, 0.2);
     
@@ -133,6 +134,7 @@ code {
 [data-theme="dark"] {
     --color-fg: #fff;
     --color-bg: #232329;
+    --color-bg-2: #3a3a43;
     --color-grid-bg: #121212;
     --color-grid: rgba(255, 255, 255, 0.2);
     

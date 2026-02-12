@@ -69,6 +69,7 @@ label {
 input {
     color: var(--color-text);
     text-align: center;
-    
+
+    border-color: var(--color-bg-2);
     background-color: var(--color-bg);
 }
