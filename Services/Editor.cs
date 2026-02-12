@@ -64,19 +64,21 @@ public class Editor
 
     #region Field Factory
 
-    private void CreateField(Field field, bool suppressModeSwitch = false)
+    private void CreateField(Field field, bool selectField = true, bool suppressModeSwitch = false)
     {
         Fields.Add(field);
-        SelectField(field);
+        
+        if (selectField)
+            SelectField(field);
         
         if (!suppressModeSwitch)
             SetMode(EditorMode.Idle);
     }
     
-    public void CreateTextField(double posX, double posY, bool suppressModeSwitch = false) 
-        => CreateField(new TextField(posX, posY), suppressModeSwitch);
-    public void CreateMathField(double posX, double posY, bool suppressModeSwitch = false) 
-        => CreateField(new MathField(posX, posY), suppressModeSwitch);
+    public void CreateTextField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
+        => CreateField(new TextField(posX, posY), selectField, suppressModeSwitch);
+    public void CreateMathField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
+        => CreateField(new MathField(posX, posY), selectField, suppressModeSwitch);
 
     #endregion
  
