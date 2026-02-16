@@ -38,6 +38,8 @@ ScaffoldingReadMe.txt
 # NuGet Symbol Packages
 *.snupkg
 
+node_modules
+
 # Others
 ~$*
 *~
