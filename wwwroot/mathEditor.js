@@ -8,7 +8,7 @@ window.mathEditor = {
     },
     setTitle: function (title) {
         title = title.replace('.mxe', '').replaceAll('"', '');
-        document.title = "Math Editor - " + title;
+        document.title = title + " - Math Editor";
     },
     isElementFocused: function (element) {
         return document.activeElement === element;
