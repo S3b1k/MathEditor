@@ -4,8 +4,8 @@
 
 <div class="toolbar">
         <div class="left">
-                <button class="menu-button @(showContextMenu ? "visible" : "")" title="Open Menu"
-                        @onclick="() => showContextMenu = !showContextMenu">
+                <button class="menu-button @(_showContextMenu ? "visible" : "")" title="Open Menu"
+                        @onclick="() => _showContextMenu = !_showContextMenu">
                         <img src="icons/icon_menu.svg" alt="menu-icon"/>
                         <span class="title">MathEditor</span>
                 </button>  
@@ -30,11 +30,11 @@
         </div>
 </div>
 
-<div class="context-menu @(showContextMenu ? "visible" : "")">
-        <input type="file" @ref="fileInput" style="display:none"
-               @onchange="e => Editor.LoadFile(e, fileInput)" />
+<div class="context-menu @(_showContextMenu ? "visible" : "")">
+        <input type="file" @ref="_fileInput" style="display:none"
+               @onchange="e => Editor.LoadFile(e, _fileInput)" />
         
-        <button @onclick="_ => Editor.OpenFilePicker(fileInput)">
+        <button @onclick="_ => Editor.OpenFilePicker(_fileInput)">
                 <img src="icons/icon_open-file.svg" alt="open-file"/>
                 Open File
         </button>
@@ -42,7 +42,7 @@
                 <img src="icons/icon_save-file.svg" alt="save-file"/>
                 Save File
         </button>
-        <button @onclick="Editor.ToggleTheme">
+        <button @onclick="_ => Editor.ToggleTheme()">
                 <img src="icons/icon_save-file.svg" alt="toggle-theme"/>
                 Toggle Theme
         </button>
@@ -50,11 +50,10 @@
 
 
 @code {
-        private bool showContextMenu;
+        private bool _showContextMenu;
 
-        private ElementReference fileInput;
-        private string? fileContent;
-        
+        private ElementReference _fileInput;
+
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
 }

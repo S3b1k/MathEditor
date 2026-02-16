@@ -23,15 +23,33 @@
     <script>
         MathfieldElement.soundsDirectory = null;
     </script>
+
+    <script>
+        (function () {
+            const isDark = localStorage.getItem("darkTheme");
+            let theme = isDark ? "dark" : "light"
+            console.log("DarkTheme: " + isDark + ", Theme: " + theme);
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 
 <body>
+<!--    <div id="app">-->
+<!--        <svg class="loading-progress">-->
+<!--            <circle r="40%" cx="50%" cy="50%" />-->
+<!--            <circle r="40%" cx="50%" cy="50%" />-->
+<!--        </svg>-->
+<!--        <div class="loading-progress-text"></div>-->
+<!--    </div>-->
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="loader-container">
+            <div class="loader-title">Math Editor</div>
+            
+            <div class="progress-bar">
+                <div class="progress-bar-fill"></div>
+            </div>
+        </div>
     </div>
 
     <div id="blazor-error-ui">

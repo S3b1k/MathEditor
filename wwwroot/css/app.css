@@ -73,19 +73,19 @@ a, .btn-link {
     margin: 0 auto 0 auto;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+.loading-progress circle {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
 
-        .loading-progress circle:last-child {
-            stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+.loading-progress circle:last-child {
+    stroke: #1b6ec2;
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
 
 .loading-progress-text {
     position: absolute;
@@ -94,9 +94,9 @@ a, .btn-link {
     inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}
 
 code {
     color: #c02d76;
@@ -109,6 +109,16 @@ code {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
+}
+
+
+* {
+    transition:
+            background-color 0.2s ease,
+            color 0.2s ease,
+            border-color 0.2s ease,
+            fill 0.2s ease,
+            stroke 0.2s ease;
 }
 
 
@@ -139,6 +149,47 @@ code {
     --color-grid: rgba(255, 255, 255, 0.2);
     
     --color-text: #fff;
+}
+
+
+
+.loader-container {
+    height: 100vh;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+.loader-title {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.progress-bar {
+    width: 250px;
+    height: 6px;
+    
+    overflow: hidden;
+    
+    background-color: var(--color-bg-2);
+    border-radius: 4px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 40%;
+    background-color: var(--color-primary);
+    
+    animation: loading 1.2s ease-in-out infinite alternate;
+}
+@keyframes loading {
+    from { width: 0%; }
+    to   { width: 100%; }
 }
 
 

@@ -1,14 +1,15 @@
 using System.Text.Json;
+using Blazored.LocalStorage;
 using MathEditor.Components;
 using MathEditor.Models;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 
 namespace MathEditor.Services;
 
 public class Editor
 {
+    
     public enum EditorMode
         {
             Idle,
@@ -17,8 +18,8 @@ public class Editor
             CreateMathField
         }
     
-    
-    private static IJSRuntime? JS { get; set; }
+    private static ILocalStorageService? _localStorage;
+    private static IJSRuntime? _js;
     
     
     #region State Handling
@@ -55,9 +56,12 @@ public class Editor
     #endregion
     
 
-    public Editor(IJSRuntime js)
+    public Editor(IJSRuntime js, ILocalStorageService localStorage)
     {
-        JS = js;
+        _localStorage = localStorage;
+        _js = js;
+
+        RetrieveData();
     }
     
 
@@ -149,6 +153,29 @@ public class Editor
     #endregion
     
     
+    #region Editor Save/Load
+
+    private static async void RetrieveData()
+    {
+        try
+        {
+            if (_localStorage == null) return;
+            await ToggleTheme(await _localStorage.GetItemAsync<bool>("darkTheme"));
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+        }
+    }
+
+    private static async Task StoreData(string key, object value)
+    {
+        if (_localStorage == null) return;
+        await _localStorage.SetItemAsync(key, value);
+    }
+    
+    #endregion
+    
     #region Saving & Loading
     
     public static void ShowSaveDialog() => 
@@ -157,21 +184,24 @@ public class Editor
 
     public static async Task SaveFile(string data)
     {
-        await JS.InvokeVoidAsync(
-            "mathEditor.saveFile", 
-            $"{SaveDialog?.Filename ?? SaveFileDialog.DefaultFilename}.mxe", 
-            data
-        );
+        if (_js == null) return;
+        await _js.InvokeVoidAsync(
+                "mathEditor.saveFile",
+                $"{SaveDialog?.Filename ?? SaveFileDialog.DefaultFilename}.mxe",
+                data
+            );
     }
 
     public static async Task OpenFilePicker(ElementReference fileInput)
     {
-        await JS.InvokeVoidAsync("mathEditor.openFilePicker", fileInput);
+        if (_js == null) return;
+        await _js.InvokeVoidAsync("mathEditor.openFilePicker", fileInput);
     }
     
     public async Task LoadFile(ChangeEventArgs e, ElementReference fileInput)
     {
-        var content = await JS.InvokeAsync<string>("mathEditor.readFile", fileInput);
+        if (_js == null) return;
+        var content = await _js.InvokeAsync<string>("mathEditor.readFile", fileInput);
         DeserializeFields(content);
     }
     
@@ -201,12 +231,17 @@ public class Editor
     
     #region Theme Toggling
 
-    public static async Task ToggleTheme()
+    public static async Task ToggleTheme(bool? val = null)
     {
-        if (JS == null) return;
+        if (_js == null) return;
+
+        if (val.HasValue) 
+            IsDark = val.Value;
+        else 
+            IsDark = !IsDark;
         
-        IsDark = !IsDark;
-        await JS.InvokeVoidAsync("mathEditor.toggleTheme", IsDark ? "dark" : "light");
+        await _js.InvokeVoidAsync("mathEditor.toggleTheme", IsDark ? "dark" : "light");
+        await StoreData("darkTheme", IsDark);
     }
     
     #endregion
