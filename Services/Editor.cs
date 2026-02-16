@@ -11,20 +11,22 @@ public class Editor
 {
     
     public enum EditorMode
-        {
-            Idle,
-            Pan,
-            CreateTextField,
-            CreateMathField
-        }
+    {
+        Idle,
+        Pan,
+        CreateTextField,
+        CreateMathField
+    }
     
     private static ILocalStorageService? _localStorage;
     private static IJSRuntime? _js;
     
+    private static JsonSerializerOptions _serializerOptions = new () { WriteIndented = true };
+    
     
     #region State Handling
-    public event Action? OnStateChanged;
-    public EditorMode Mode
+    public static event Action? OnStateChanged;
+    public static EditorMode Mode
     {
         get;
         private set
@@ -34,18 +36,16 @@ public class Editor
         }
     } = EditorMode.Idle;
     
-    public void SetMode(EditorMode mode) => Mode = mode;
+    public static void SetMode(EditorMode mode) => Mode = mode;
     #endregion
-    
     
     #region Field Properties
-    public List<Field> Fields { get; } = [];
+    public static List<Field> Fields { get; } = [];
     
-    public event Action? OnFieldClicked;
-    public List<Field> SelectedFields { get; } = [];
-    public int SelectionCount => SelectedFields.Count;
+    public static event Action? OnFieldClicked;
+    public static List<Field> SelectedFields { get; } = [];
+    public static int SelectionCount => SelectedFields.Count;
     #endregion
-    
     
     #region Save Dialog
     public static SaveFileDialog? SaveDialog { get; set; }
@@ -65,10 +65,9 @@ public class Editor
     }
     
 
-
     #region Field Factory
 
-    private void CreateField(Field field, bool selectField = true, bool suppressModeSwitch = false)
+    private static void CreateField(Field field, bool selectField = true, bool suppressModeSwitch = false)
     {
         Fields.Add(field);
         
@@ -77,11 +76,13 @@ public class Editor
         
         if (!suppressModeSwitch)
             SetMode(EditorMode.Idle);
+
+        SaveCachedFile();
     }
     
-    public void CreateTextField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
+    public static void CreateTextField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
         => CreateField(new TextField(posX, posY), selectField, suppressModeSwitch);
-    public void CreateMathField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
+    public static void CreateMathField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
         => CreateField(new MathField(posX, posY), selectField, suppressModeSwitch);
 
     #endregion
@@ -89,8 +90,8 @@ public class Editor
     
     #region Field Handling
     
-    public void SelectField(Field field) => SelectField(field, true);
-    public void SelectField(Field field, bool shift)
+    public static void SelectField(Field field) => SelectField(field, true);
+    public static void SelectField(Field field, bool shift)
     {
         NotifyFieldClicked();
         
@@ -103,7 +104,7 @@ public class Editor
         SelectedFields.Add(field);
     }
 
-    public void DeselectField(Field field)
+    public static void DeselectField(Field field)
     {
         if (!field.IsSelected) return;
         
@@ -112,7 +113,7 @@ public class Editor
         
         field.NotifyFieldDeselected();
     }
-    public void DeselectAllFields()
+    public static void DeselectAllFields()
     {
         foreach (var field in SelectedFields)
         {
@@ -154,13 +155,23 @@ public class Editor
     
     
     #region Editor Save/Load
-
+    
     private static async void RetrieveData()
     {
         try
         {
             if (_localStorage == null) return;
-            await ToggleTheme(await _localStorage.GetItemAsync<bool>("darkTheme"));
+            IsDark = await _localStorage.GetItemAsync<bool>("darkTheme");
+
+            var file = await _localStorage.GetItemAsync<List<FieldSaveData>>("file");
+            if (file is { Count: > 0 })
+            {
+                ReadSaveList(file);
+
+                var fileName = await _localStorage.GetItemAsStringAsync("fileName");
+                if(fileName != null && !string.IsNullOrEmpty(fileName))
+                    await _js!.InvokeVoidAsync("mathEditor.setTitle", fileName);
+            }
         }
         catch (Exception e)
         {
@@ -168,48 +179,37 @@ public class Editor
         }
     }
 
-    private static async Task StoreData(string key, object value)
+    private static async void StoreData(string key, object value)
+    {
+        try
+        {
+            await StoreDataAsync(key, value);
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+        }
+    }
+    public static async Task StoreDataAsync(string key, object value)
     {
         if (_localStorage == null) return;
         await _localStorage.SetItemAsync(key, value);
     }
+
+
+    public static void SaveCachedFile() =>
+        StoreData("file", GetSaveList());
     
     #endregion
     
     #region Saving & Loading
-    
-    public static void ShowSaveDialog() => 
-        SaveDialog?.Open(/* Saved Filename */);   
-    
 
-    public static async Task SaveFile(string data)
-    {
-        if (_js == null) return;
-        await _js.InvokeVoidAsync(
-                "mathEditor.saveFile",
-                $"{SaveDialog?.Filename ?? SaveFileDialog.DefaultFilename}.mxe",
-                data
-            );
-    }
+    private static List<FieldSaveData> GetSaveList() => 
+        Fields.Select(f => f.ToSaveData()).ToList();
 
-    public static async Task OpenFilePicker(ElementReference fileInput)
+    private static void ReadSaveList(List<FieldSaveData> saveList)
     {
-        if (_js == null) return;
-        await _js.InvokeVoidAsync("mathEditor.openFilePicker", fileInput);
-    }
-    
-    public async Task LoadFile(ChangeEventArgs e, ElementReference fileInput)
-    {
-        if (_js == null) return;
-        var content = await _js.InvokeAsync<string>("mathEditor.readFile", fileInput);
-        DeserializeFields(content);
-    }
-    
-    private void DeserializeFields(string json)
-    {
-        var list = JsonSerializer.Deserialize<List<FieldSaveData>>(json)!;
-
-        foreach (var f in list)
+        foreach (var f in saveList)
         {
             Field field = f.Type switch
             {
@@ -221,10 +221,56 @@ public class Editor
             field.Width = f.Width;
             field.Height = f.Height;
 
-            CreateField(field);
+            CreateField(field, selectField: false);
         }
     }
+    
+    public static string SerializeFields() => 
+        JsonSerializer.Serialize(GetSaveList(), _serializerOptions);
+    
+    private static void DeserializeFields(string json) =>
+        ReadSaveList(JsonSerializer.Deserialize<List<FieldSaveData>>(json)!);
+    
+    
+    
+    public static void ShowSaveDialog() => 
+        SaveDialog?.Open(/* Saved Filename */);   
+    
 
+    public static async Task SaveFile()
+    {
+        if (_js == null) return;
+
+        var fileName = SaveDialog?.Filename ?? SaveFileDialog.DefaultFilename;
+        
+        await _js.InvokeVoidAsync(
+                "mathEditor.saveFile",
+                $"{fileName}.mxe",
+                SerializeFields()
+            );
+
+        await _js.InvokeVoidAsync("mathEditor.setTitle", fileName);
+        StoreData("fileName", fileName);
+    }
+
+    public static async Task OpenFilePicker(ElementReference fileInput)
+    {
+        if (_js == null) return;
+        await _js.InvokeVoidAsync("mathEditor.openFilePicker", fileInput);
+    }
+    
+    public static async Task LoadFile(ChangeEventArgs e, ElementReference fileInput)
+    {
+        if (_js == null) return;
+        
+        var fileData = await _js.InvokeAsync<FileData>("mathEditor.readFile", fileInput);
+
+        DeserializeFields(fileData.Content);
+        
+        SaveCachedFile();
+        await StoreDataAsync("fileName", fileData.Name);
+        await _js.InvokeVoidAsync("mathEditor.setTitle", fileData.Name);
+    }
     
     #endregion
     
@@ -241,7 +287,7 @@ public class Editor
             IsDark = !IsDark;
         
         await _js.InvokeVoidAsync("mathEditor.toggleTheme", IsDark ? "dark" : "light");
-        await StoreData("darkTheme", IsDark);
+        await StoreDataAsync("darkTheme", IsDark);
     }
     
     #endregion
@@ -289,6 +335,7 @@ public class Editor
                     
                         DeleteField(field);
                     }
+                    SaveCachedFile();
                     break;
             }
         }
@@ -297,8 +344,16 @@ public class Editor
     
     #region Event Notifications
     
-    private void NotifyStateChanged() => OnStateChanged?.Invoke();
-    public void NotifyFieldClicked() => OnFieldClicked?.Invoke();
+    private static void NotifyStateChanged() => OnStateChanged?.Invoke();
+    public static void NotifyFieldClicked() => OnFieldClicked?.Invoke();
     
     #endregion
+
+    
+    
+    private class FileData
+    {
+        public string Content { get; set; } = "";
+        public string Name { get; set; } = "";
+    }
 }

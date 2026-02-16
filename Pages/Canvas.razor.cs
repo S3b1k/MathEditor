@@ -98,7 +98,7 @@ public partial class Canvas : ComponentBase
     {
         try
         {
-            await Editor.SaveFile(SerializeFields());
+            await Editor.SaveFile();
         }
         catch (Exception e)
         {
@@ -107,14 +107,7 @@ public partial class Canvas : ComponentBase
     }
     
     
-    private string SerializeFields()
-    {
-        var saveList = Fields.Select(f => f.ToSaveData()).ToList();
-        return JsonSerializer.Serialize(saveList, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
-    }
+
     
     #endregion
     
@@ -279,6 +272,9 @@ public partial class Canvas : ComponentBase
             field.IsDragging = false;
             field.IsResizing = false;
         }
+
+        if (_isInteractingWithField)
+            Editor.SaveCachedFile();
 
         _isInteractingWithField = false;
     }

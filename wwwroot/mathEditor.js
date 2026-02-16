@@ -6,6 +6,10 @@ window.mathEditor = {
         }
         requestAnimationFrame(loop);
     },
+    setTitle: function (title) {
+        title = title.replace('.mxe', '').replaceAll('"', '');
+        document.title = "Math Editor - " + title;
+    },
     isElementFocused: function (element) {
         return document.activeElement === element;
     },
@@ -46,7 +50,12 @@ window.mathEditor = {
             }
             
             const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
+            reader.onload = () => {
+                resolve({
+                    content: reader.result,
+                    name: file.name
+                });
+            }
             reader.onerror = reject;
             reader.readAsText(file);
         })

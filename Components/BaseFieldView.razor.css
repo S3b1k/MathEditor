@@ -9,11 +9,11 @@
     overflow: var(--overflow);
 }
 .field:hover {
-    outline: 2px dotted #4a90e2;
+    outline: 2px dotted var(--color-selection);
     cursor: pointer;
 }
 .field.selected {
-    outline: 3px solid #4a90e2;
+    outline: 3px solid var(--color-selection);
     outline-offset: 2px;
     cursor: default;
 }
@@ -22,7 +22,7 @@
 .selection-frame {
     position: absolute;
     inset: -10px;
-    border: 1px solid #4a90e2;
+    border: 1px solid var(--color-selection);
     border-radius: 3px;
     cursor: move;
     user-select: none;
@@ -34,7 +34,7 @@
     width: 8px;
     height: 8px;
     background: white;
-    border: 1px solid #4a90e2;
+    border: 1px solid var(--color-selection);
     border-radius: 3px;
 }
 

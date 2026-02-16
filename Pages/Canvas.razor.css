@@ -1,8 +1,9 @@
 .canvas-container {
     width: 100vw;
     height: 100vh;
-    overflow: hidden;
     position: relative;
+    
+    overflow: hidden;
 }
 
 
@@ -14,12 +15,15 @@
 }
 
 .selection-box {
-    position: fixed;
-    border: 1px solid #4a90e2;
-    border-radius: 8px;
-    background: rgba(74, 144, 226, 0.2);
-    pointer-events: none;
     z-index: 9999;
+    
+    position: fixed;
+
+    background: var(--color-selection-bg);
+    border: 1px solid var(--color-selection);
+    border-radius: 8px;
+    
+    pointer-events: none;
     transition: opacity 0.2s ease-out;
 }
 .selection-box.fade-out {
