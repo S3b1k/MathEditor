@@ -216,8 +216,9 @@ public partial class Canvas : ComponentBase
                 if (field.IsEditing)
                     break;
                 
-                var worldX = (e.ClientX - Cam.PanX) / Zoom - field.DragOffsetX;
-                var worldY = (e.ClientY - Cam.PanY) / Zoom - field.DragOffsetY;
+                var (worldX, worldY) = Cam.ScreenToWorld(e.ClientX, e.ClientY);
+                worldX -= field.DragOffsetX;
+                worldY -= field.DragOffsetY;
                 
                 if (!e.CtrlKey)
                 {

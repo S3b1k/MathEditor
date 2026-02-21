@@ -40,27 +40,22 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     }
     
     
-    private Task StartEditing(MouseEventArgs e) => OnStartEditing.InvokeAsync(e);
+    private Task StartEditing(MouseEventArgs e) => 
+        OnStartEditing.InvokeAsync(e);
     
-    
-    private void StartResize(PointerEventArgs e, Field.ResizeDirection direction)
-    { 
+    private void StartResize(PointerEventArgs e, Field.ResizeDirection direction) =>
         Editor.BeginFieldResize(Field, direction, (e.ClientX, e.ClientY));
-    }
     
-    private void StartDrag(PointerEventArgs e)
-    {
-        var dragOffset = Cam.ComputeDragOffset(Field, e.ClientX, e.ClientY);
-        Editor.BeginFieldDrag(Field, dragOffset);
-    }
+    private void StartDrag(PointerEventArgs e) =>
+        Editor.BeginFieldDrag(Field, e.ClientX, e.ClientY);
     #endregion
     
     
     #region overridables
     protected virtual void PointerDown(PointerEventArgs e)
     {
-        StartDrag(e);
         Editor.SelectField(Field, e.ShiftKey);
+        StartDrag(e);
     }
     
 

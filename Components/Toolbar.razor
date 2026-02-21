@@ -48,7 +48,7 @@
                 <img class="theme-toggle-icon" alt="toggle-theme"/>
                 Toggle Theme
         </button>
-        <button @onclick="ShowClearConfirmation">
+        <button @onclick="ShowClearCanvasDialog">
                 <img src="icons/icon_trash.svg" alt="toggle-theme"/>
                 Clear Canvas
         </button>
@@ -62,14 +62,14 @@
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
 
 
-        private void ShowClearConfirmation()
+        public static void ShowClearCanvasDialog()
         {
                 var parameters = new DialogParams
                 {
-                        ["TitleText"] = "Clear Canvas",
-                        ["Text"] = "Do you really want to clear the canvas? Unsaved " +
-                                   "changes will not be recoverable.",
-                        ["OnConfirm"] = Editor.ClearCanvas
+                        ["TitleText"] = "Clear Grid",
+                        ["Text"] = "This will clear the entire grid. Any unsaved " +
+                                   "changes will not be recoverable. Do you want to continue?",
+                        ["OnConfirm"] = Editor.ClearGrid
                 };
                 Editor.ShowDialog(typeof(ConfirmationDialogView), parameters);
         }

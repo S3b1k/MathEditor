@@ -16,7 +16,8 @@ public class Editor
         CreateTextField,
         CreateMathField
     }
-    
+
+    private static Camera _cam;
     private static ILocalStorageService? _localStorage;
     private static IJSRuntime? _js;
     
@@ -55,8 +56,9 @@ public class Editor
     
     
 
-    public Editor(IJSRuntime js, ILocalStorageService localStorage)
+    public Editor(Camera cam, IJSRuntime js, ILocalStorageService localStorage)
     {
+        _cam = cam;
         _localStorage = localStorage;
         _js = js;
 
@@ -141,11 +143,16 @@ public class Editor
     }
 
 
-    public static void BeginFieldDrag(Field field, (double x, double y) dragOffset)
+    public static void BeginFieldDrag(Field field, double mouseX, double mouseY)
     {
-        field.IsDragging = true;
-        field.DragOffsetX = dragOffset.x;
-        field.DragOffsetY = dragOffset.y;
+        foreach (var selected in SelectedFields)
+        {
+            var dragOffset = _cam.ComputeDragOffset(selected, mouseX, mouseY);
+            selected.DragOffsetX = dragOffset.offsetX;
+            selected.DragOffsetY = dragOffset.offsetY;
+            
+            selected.IsDragging = true;
+        }
     }
 
 
@@ -166,7 +173,7 @@ public class Editor
         await _js!.InvokeAsync<IJSObjectReference>("window.open", "/", "_blank");
     
     
-    public static async Task ClearCanvas()
+    public static async Task ClearGrid()
     {
         Fields.Clear();
         SelectedFields.Clear();
@@ -257,14 +264,6 @@ public class Editor
         ReadSaveList(JsonSerializer.Deserialize<List<FieldSaveData>>(json)!);
     
     
-    
-    public static void ShowSaveDialog()
-    {
-        var parameters = new DialogParams { ["OnSave"] = SaveFile };
-        ShowDialog(typeof(SaveDialogView), parameters);
-    } 
-    
-
     public static async Task SaveFile(string fileName)
     {
         if (_js == null) return;
@@ -289,6 +288,8 @@ public class Editor
     {
         if (_js == null) return;
         
+        await ClearGrid();
+        
         var fileData = await _js.InvokeAsync<FileData>("mathEditor.readFile", FileInput);
 
         DeserializeFields(fileData.Content);
@@ -308,6 +309,14 @@ public class Editor
         OnDialogOpen?.Invoke(dialogType, dialogParams);
         DialogManager.OpenDialog();
     }
+    
+    
+    public static void ShowSaveDialog()
+    {
+        var parameters = new DialogParams { ["OnSave"] = SaveFile };
+        ShowDialog(typeof(SaveDialogView), parameters);
+    } 
+
     
     #endregion
     
@@ -332,7 +341,7 @@ public class Editor
     
     
     [JSInvokable]
-    public async void OnKeypress(string key, bool ctrl, bool shift, bool alt)
+    public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
     {
         if (DialogManager.DialogOpen)
         {
@@ -363,7 +372,16 @@ public class Editor
                     break;
                 case "o":
                     if (ctrl)
-                        _ = OpenFilePicker();
+                    {
+                        var parameters = new DialogParams
+                        {
+                            ["TitleText"] = "Warning",
+                            ["Text"] = "Loading a file will clear the grid. Any unsaved " +
+                                       "changes will not be recoverable. Do you want to continue?",
+                            ["OnConfirm"] = OpenFilePicker
+                        };
+                        ShowDialog(typeof(ConfirmationDialogView), parameters);
+                    }
                     break;
                 case "s":
                     if (ctrl)
