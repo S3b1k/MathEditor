@@ -48,6 +48,8 @@ public class Editor
     
     public static BaseDialogView? Dialog { get; set; }
     public static event Action<Type, DialogParams?>? OnDialogOpen;
+
+    public static ElementReference FileInput;
     
     public static bool IsDark { get; private set; }
     
@@ -277,17 +279,17 @@ public class Editor
         StoreData("fileName", fileName);
     }
 
-    public static async Task OpenFilePicker(ElementReference fileInput)
+    public static async Task OpenFilePicker()
     {
         if (_js == null) return;
-        await _js.InvokeVoidAsync("mathEditor.openFilePicker", fileInput);
+        await _js.InvokeVoidAsync("mathEditor.openFilePicker", FileInput);
     }
     
-    public static async Task LoadFile(ChangeEventArgs e, ElementReference fileInput)
+    public static async Task LoadFile(ChangeEventArgs e)
     {
         if (_js == null) return;
         
-        var fileData = await _js.InvokeAsync<FileData>("mathEditor.readFile", fileInput);
+        var fileData = await _js.InvokeAsync<FileData>("mathEditor.readFile", FileInput);
 
         DeserializeFields(fileData.Content);
         
@@ -330,7 +332,7 @@ public class Editor
     
     
     [JSInvokable]
-    public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
+    public async void OnKeypress(string key, bool ctrl, bool shift, bool alt)
     {
         if (DialogManager.DialogOpen)
         {
@@ -351,6 +353,21 @@ public class Editor
                     break;
                 case "m":
                     SetMode(EditorMode.CreateMathField);
+                    break;
+                case "a":
+                    if (ctrl)
+                    {
+                        foreach (var field in Fields)
+                            SelectField(field);
+                    }
+                    break;
+                case "o":
+                    if (ctrl)
+                        _ = OpenFilePicker();
+                    break;
+                case "s":
+                    if (ctrl)
+                        ShowSaveDialog();
                     break;
             }
         }

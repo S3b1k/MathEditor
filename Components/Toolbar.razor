@@ -31,16 +31,18 @@
 </div>
 
 <div class="context-menu @(_showContextMenu ? "visible" : "")">
-        <input type="file" @ref="_fileInput" style="display:none"
-               @onchange="e => Editor.LoadFile(e, _fileInput)" />
+        <input type="file" accept=".mxe" @ref="Editor.FileInput" style="display:none"
+               @onchange="Editor.LoadFile" />
         
-        <button @onclick="_ => Editor.OpenFilePicker(_fileInput)">
+        <button @onclick="_ => Editor.OpenFilePicker()">
                 <img src="icons/icon_open-file.svg" alt="open-file"/>
                 Open File
+                <span class="shortcut">Ctrl + O</span>
         </button>
         <button @onclick="Editor.ShowSaveDialog">
                 <img src="icons/icon_save-file.svg" alt="save-file"/>
                 Save File
+                <span class="shortcut">Ctrl + S</span>
         </button>
         <button @onclick="_ => Editor.ToggleTheme()">
                 <img class="theme-toggle-icon" alt="toggle-theme"/>
@@ -55,9 +57,7 @@
 
 @code {
         private bool _showContextMenu;
-
-        private ElementReference _fileInput;
-
+        
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
 

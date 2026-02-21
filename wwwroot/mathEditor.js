@@ -81,6 +81,11 @@ window.keyboardActions = {
             const shift = e.shiftKey;
             const alt = e.altKey;
 
+            if (ctrl) {
+                if (key === "o" || key === "s")
+                    e.preventDefault();
+            }
+
             dotnetRef.invokeMethodAsync("OnKeypress", key, ctrl, shift, alt);
         });
     }
