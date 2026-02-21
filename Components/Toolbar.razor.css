@@ -77,19 +77,25 @@
 /* Menu Button */
 .menu-button {
     display: flex;
-       
+    
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
 
-    transition: width 0.15s ease-out;
+    transition: width 0.2s ease-out;
 }
-.menu-button img {
-    margin-left: 3px;
-    margin-top: 8px;
-}
-
 .menu-button.visible {
     width: 220px;
 }
+
+.menu-button img {
+    margin-left: 3px;
+    margin-top: 8px;
+    
+    transition: transform 0.2s ease-out;
+}
+.menu-button.visible img {
+    transform: rotate(180deg);
+}
+
 .menu-button span {
     opacity: 0;
     margin-top: 6px;
@@ -97,7 +103,7 @@
     font-size: 14pt;
     visibility: hidden;
     
-    transition: opacity 0.2s linear;
+    transition: opacity 0.3s ease;
 }
 .menu-button.visible span {
     width: 100%;
@@ -106,6 +112,11 @@
     visibility: visible;
     
     color: var(--color-text);
+}
+
+
+.theme-toggle-icon {
+    content: var(--icon-theme-toggle);
 }
 
 
@@ -162,7 +173,7 @@
     background: var(--color-menu-btn-hover);
 }
 
-.context-menu img, svg {
+.context-menu img {
     width: 17px;
     height: 17px;
     margin-right: 5px;

@@ -143,6 +143,9 @@ code {
     --color-text: #000;
     --color-text-light: #fff;
     --color-text-dark: #000;
+    
+    
+    --icon-theme-toggle: url("icons/icon_moon.svg");
 }
 
 [data-theme="dark"] {
@@ -159,6 +162,9 @@ code {
     --color-selection-bg: rgba(64, 127, 200, 0.2);
     
     --color-text: #fff;
+    
+    
+    --icon-theme-toggle: url("icons/icon_sun.svg");
 }
 
 
