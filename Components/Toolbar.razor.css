@@ -169,6 +169,9 @@
     
     transition: none;
 }
+[data-theme="dark"] img {
+    filter: invert(93%) sepia(100%) saturate(0%) hue-rotate(248deg) brightness(106%) contrast(106%);
+}
 .context-menu button:hover {
     background: var(--color-menu-btn-hover);
 }
