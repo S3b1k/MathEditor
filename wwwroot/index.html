@@ -21,10 +21,17 @@
     
     
     <script>
+        // Loading theme
+        const darkTheme = localStorage.getItem("darkTheme");
+        const isDark = darkTheme === "true";
+        document.documentElement.setAttribute('data-theme', isDark ? "dark" : "light");
+        
+        
+        // Removing sounds from MathLive
         MathfieldElement.soundsDirectory = null;
-    </script>
 
-    <script>
+        
+        // Adding fade transition after blazor load
         window.fadeOutLoader = function() {
             const loader = document.getElementById("blazor-loading");
             if (!loader) return;
@@ -32,15 +39,7 @@
             void loader.offsetWidth;
             loader.classList.add("fade-out");
             loader.addEventListener("transitionend", () => loader.remove());
-        }
-    </script>
-    
-    <script>
-        (function () {
-            const darkTheme = localStorage.getItem("darkTheme");
-            const isDark = darkTheme === "true";
-            document.documentElement.setAttribute('data-theme', isDark ? "dark" : "light");
-        })();
+        };
     </script>
 </head>
 
@@ -70,11 +69,9 @@
             document.body.classList.add("blazor-loaded");
             
             const loader = document.getElementById("blazor-loader");
-            
             void loader.offsetWidth;
             
             loader.classList.add("fade-out");
-            
             loader.addEventListener("transitionend", () => loader.remove());
         });
     </script>

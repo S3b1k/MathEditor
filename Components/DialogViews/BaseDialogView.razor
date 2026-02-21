@@ -1,0 +1,13 @@
+@using MathEditor.Services
+<div class="dialog">
+    <div class="foreground">
+        <h3 class="title">@Title</h3>
+        
+        @Body
+        
+        <div class="buttons">
+            @Buttons
+            <button class="simple-button" @onclick="DialogManager.CloseDialog">@CloseBtn</button>
+        </div>
+    </div>
+</div>

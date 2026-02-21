@@ -1,0 +1,11 @@
+@inherits BaseDialogView
+
+<BaseDialogView Title="@TitleText" CloseBtn="Cancel">
+    <Body>
+        <p>@Text</p>
+    </Body>
+    
+    <Buttons>
+        <button class="simple-button" @onclick="Confirm">Ok</button>
+    </Buttons>
+</BaseDialogView>

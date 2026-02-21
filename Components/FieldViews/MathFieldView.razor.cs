@@ -2,7 +2,7 @@ using MathEditor.Models;
 using MathEditor.Pages;
 using Microsoft.JSInterop;
 
-namespace MathEditor.Components;
+namespace MathEditor.Components.FieldViews;
 
 public partial class MathFieldView : BaseFieldView<MathField>
 {
@@ -11,7 +11,7 @@ public partial class MathFieldView : BaseFieldView<MathField>
     
     protected override void OnInitialized()
     {
-        Field.OnFieldDeselected += OnDeselected;
+        Field.OnFieldDeselected += OnDeselect;
     }
 
 
@@ -35,7 +35,7 @@ public partial class MathFieldView : BaseFieldView<MathField>
     
     
     #region events
-    private async void OnDeselected()
+    private async void OnDeselect()
     {
         try
         {

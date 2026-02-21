@@ -1,6 +1,6 @@
 ﻿@page "/"
-@using MathEditor.Components
-@using MathEditor.Services
+@using MathEditor.Components;
+@using MathEditor.Services;
 
 @inject IJSRuntime JS
 @inject Editor Editor;
@@ -66,5 +66,8 @@
     
     
     @* Save Dialog *@
-    <SaveFileDialog @ref="Editor.SaveDialog" OnSave="SaveFile"></SaveFileDialog>
+    @if (DialogManager.DialogOpen)
+    {
+        @Dialog
+    }
 </div>

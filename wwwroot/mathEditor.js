@@ -7,8 +7,15 @@ window.mathEditor = {
         requestAnimationFrame(loop);
     },
     setTitle: function (title) {
-        title = title.replace('.mxe', '').replaceAll('"', '');
-        document.title = title + " - Math Editor";
+        const name = "Math Editor";
+        
+        if (title === "")
+            title = name;
+        else {
+            title = title.replace('.mxe', '').replaceAll('"', '');
+            title += " - " + name;
+        }
+        document.title = title;
     },
     isElementFocused: function (element) {
         return document.activeElement === element;

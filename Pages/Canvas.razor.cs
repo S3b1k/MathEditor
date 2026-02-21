@@ -54,6 +54,7 @@ public partial class Canvas : ComponentBase
     
     // Editor
     private Editor.EditorMode _previousMode = Editor.EditorMode.Idle;
+    public required RenderFragment Dialog { get; set; }
     
     #endregion
 
@@ -87,36 +88,20 @@ public partial class Canvas : ComponentBase
     protected override void OnInitialized()
     {
         Editor.OnFieldClicked += () => _isInteractingWithField = true;
-
-        JS.InvokeVoidAsync("mathEditor.registerRatioWatcher", DotNetObjectReference.Create(this));
+        Editor.OnDialogOpen += ResolveDialogView;
     }
 
-    
-    #region Saving / Loading
-    
-    private async void SaveFile()
+    private void ResolveDialogView(Type dialogType, DialogParams? dialogParams)
     {
-        try
-        {
-            await Editor.SaveFile();
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-        }
+        Dialog = DialogManager.Resolve(dialogType, dialogParams)!;
     }
-    
-    
-
-    
-    #endregion
     
     
     #region Events
     
     private void OnPointerDown(PointerEventArgs e)
     {
-        if (Editor.IsDialogOpen || _isInteractingWithField)
+        if (DialogManager.DialogOpen || _isInteractingWithField)
             return;
 
         if (e.Button == 0)
@@ -156,7 +141,7 @@ public partial class Canvas : ComponentBase
 
     private void OnPointerMove(PointerEventArgs e)
     {
-        if (Editor.IsDialogOpen)
+        if (DialogManager.DialogOpen)
             return;
         
         if (Editor.Mode == Editor.EditorMode.Pan && _panning)
@@ -249,7 +234,7 @@ public partial class Canvas : ComponentBase
 
     private async Task OnPointerUp(PointerEventArgs e)
     {
-        if (Editor.IsDialogOpen)
+        if (DialogManager.DialogOpen)
             return;
         
         if (Editor.Mode == Editor.EditorMode.Pan)
@@ -281,7 +266,7 @@ public partial class Canvas : ComponentBase
 
     private void OnWheel(WheelEventArgs e)
     {
-        if (Editor.IsDialogOpen)
+        if (DialogManager.DialogOpen)
             return;
         
         if (e.CtrlKey)
@@ -305,7 +290,7 @@ public partial class Canvas : ComponentBase
     
     private void OnKeyDown(KeyboardEventArgs e)
     {
-        if (Editor.IsDialogOpen)
+        if (DialogManager.DialogOpen)
             return;
         
         if (Editor.SelectionCount > 0)

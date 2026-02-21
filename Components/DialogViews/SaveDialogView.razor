@@ -1,0 +1,12 @@
+@inherits BaseDialogView
+
+<BaseDialogView Title="Save File" CloseBtn="Cancel">
+    <Body>
+        <label>Filename:</label>
+        <input type="text" @bind="Filename" />
+    </Body>
+    
+    <Buttons>
+        <button class="simple-button" @onclick="OnSaveClicked">Save</button>
+    </Buttons>
+</BaseDialogView>

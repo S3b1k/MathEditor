@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Blazored.LocalStorage;
-using MathEditor.Components;
+using MathEditor.Components.DialogViews;
 using MathEditor.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -9,7 +9,6 @@ namespace MathEditor.Services;
 
 public class Editor
 {
-    
     public enum EditorMode
     {
         Idle,
@@ -47,13 +46,11 @@ public class Editor
     public static int SelectionCount => SelectedFields.Count;
     #endregion
     
-    #region Save Dialog
-    public static SaveFileDialog? SaveDialog { get; set; }
-
-    public static bool IsDialogOpen => SaveDialog?.IsOpen ?? false;
-
+    public static BaseDialogView? Dialog { get; set; }
+    public static event Action<Type, DialogParams?>? OnDialogOpen;
+    
     public static bool IsDark { get; private set; }
-    #endregion
+    
     
 
     public Editor(IJSRuntime js, ILocalStorageService localStorage)
@@ -110,13 +107,23 @@ public class Editor
         
         field.IsSelected = false;
         SelectedFields.Remove(field);
+
+        if (field.IsEditing)
+            SaveCachedFile();
         
         field.NotifyFieldDeselected();
     }
     public static void DeselectAllFields()
     {
+        var saved = false;
         foreach (var field in SelectedFields)
         {
+            if (field.IsEditing && !saved)
+            {
+                SaveCachedFile();
+                saved = true;
+            }
+            
             field.IsSelected = false;
             field.NotifyFieldDeselected();            
         } 
@@ -150,6 +157,22 @@ public class Editor
         field.ResizeStartPosX = field.PosX;
         field.ResizeStartPosY = field.PosY;
         field.ResizeDir = dir;
+    }
+
+
+    public static async Task OpenNewTab() =>
+        await _js!.InvokeAsync<IJSObjectReference>("window.open", "/", "_blank");
+    
+    
+    public static async Task ClearCanvas()
+    {
+        Fields.Clear();
+        SelectedFields.Clear();
+        
+        SaveCachedFile();
+        await StoreDataAsync("fileName", "");
+        
+        await _js!.InvokeVoidAsync("mathEditor.setTitle", "");
     }
     #endregion
     
@@ -233,15 +256,16 @@ public class Editor
     
     
     
-    public static void ShowSaveDialog() => 
-        SaveDialog?.Open(/* Saved Filename */);   
+    public static void ShowSaveDialog()
+    {
+        var parameters = new DialogParams { ["OnSave"] = SaveFile };
+        ShowDialog(typeof(SaveDialogView), parameters);
+    } 
     
 
-    public static async Task SaveFile()
+    public static async Task SaveFile(string fileName)
     {
         if (_js == null) return;
-
-        var fileName = SaveDialog?.Filename ?? SaveFileDialog.DefaultFilename;
         
         await _js.InvokeVoidAsync(
                 "mathEditor.saveFile",
@@ -275,6 +299,17 @@ public class Editor
     #endregion
     
     
+    #region dialogs
+    
+    public static void ShowDialog(Type dialogType, DialogParams? dialogParams = null)
+    {
+        OnDialogOpen?.Invoke(dialogType, dialogParams);
+        DialogManager.OpenDialog();
+    }
+    
+    #endregion
+    
+    
     #region Theme Toggling
 
     public static async Task ToggleTheme(bool? val = null)
@@ -297,10 +332,10 @@ public class Editor
     [JSInvokable]
     public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
     {
-        if (IsDialogOpen)
+        if (DialogManager.DialogOpen)
         {
             if (key == "escape")
-                SaveDialog?.Close();
+                DialogManager.CloseDialog();
             return;
         }
         

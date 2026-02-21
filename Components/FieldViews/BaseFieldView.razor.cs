@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-namespace MathEditor.Components;
+namespace MathEditor.Components.FieldViews;
 
 public partial class BaseFieldView<TField> : ComponentBase where TField : Field
 {
@@ -64,7 +64,11 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     }
     
 
-    protected virtual void StartEditing() => Field.IsEditing = true;
+    protected virtual void StartEditing()
+    {
+        Field.IsEditing = true;
+    }
+
     #endregion
     
     

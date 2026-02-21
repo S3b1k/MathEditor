@@ -2,13 +2,13 @@ using MathEditor.Models;
 using MathEditor.Pages;
 using Microsoft.JSInterop;
 
-namespace MathEditor.Components;
+namespace MathEditor.Components.FieldViews;
 
 public partial class TextFieldView : BaseFieldView<TextField>
 {
     protected override void OnInitialized()
     {
-        Field.OnFieldDeselected += OnDeselected;
+        Field.OnFieldDeselected += OnDeselect;
     }
     
     
@@ -24,7 +24,7 @@ public partial class TextFieldView : BaseFieldView<TextField>
         Field.Width = newWidth > Field.Width ? newWidth : Field.Width;
     }
     
-    private async void OnDeselected()
+    private async void OnDeselect()
     {
         try
         {

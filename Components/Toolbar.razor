@@ -1,3 +1,4 @@
+@using MathEditor.Components.DialogViews
 @using MathEditor.Services
 @implements IDisposable;
 
@@ -45,6 +46,14 @@
                 <img src="icons/icon_save-file.svg" alt="toggle-theme"/>
                 Toggle Theme
         </button>
+        <button @onclick="ShowClearConfirmation">
+                <img src="icons/icon_save-file.svg" alt="toggle-theme"/>
+                Clear Canvas
+        </button>
+        <button @onclick="Editor.OpenNewTab">
+                <img src="icons/icon_save-file.svg" alt="toggle-theme"/>
+                New File
+        </button>
 </div>
 
 
@@ -55,4 +64,17 @@
 
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
+
+
+        private void ShowClearConfirmation()
+        {
+                var parameters = new DialogParams
+                {
+                        ["TitleText"] = "Clear Canvas",
+                        ["Text"] = "Do you really want to clear the canvas? Unsaved " +
+                                   "changes will not be recoverable.",
+                        ["OnConfirm"] = Editor.ClearCanvas
+                };
+                Editor.ShowDialog(typeof(ConfirmationDialogView), parameters);
+        }
 }
