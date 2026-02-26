@@ -1,20 +1,24 @@
-using MathEditor.Models;
 using MathEditor.Models.Actions;
 
 namespace MathEditor.Services;
 
-public class EditorController
+public static class EditorController
 {
-    public static Stack<IUndoableAction> UndoStack { get; } = new();
-    public static Stack<IUndoableAction> RedoStack { get; } = new();
+    private static Stack<IUndoableAction> UndoStack { get; } = new();
+    private static Stack<IUndoableAction> RedoStack { get; } = new();
 
 
     public static void ExecuteAction(IUndoableAction action)
     {
         action.Execute();
+        RegisterAction(action);
+        Editor.SaveCachedFile();
+    }
+
+    public static void RegisterAction(IUndoableAction action)
+    {
         UndoStack.Push(action);
         RedoStack.Clear();
-        Editor.SaveCachedFile();
     }
     
 

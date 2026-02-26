@@ -25,4 +25,16 @@ public class MathField : Field
         Height = Height,
         Content = Latex
     };
+
+
+    public override Field Copy()
+    {
+        return new MathField(PosX, PosY)
+        {
+            Id = Id,
+            Width = Width,
+            Height = Height,
+            Latex = Latex,
+        };
+    }
 }

@@ -138,10 +138,20 @@ public class Editor
     }
     
     public static void DeleteField(Field field)
+        => EditorController.ExecuteAction(new DeleteFieldsAction(field));
+
+    public static void DeleteSelectedFields()
+    {
+        var fields = SelectedFields.Where(f => !f.IsEditing).ToArray();
+        EditorController.ExecuteAction(new DeleteFieldsAction(fields));
+    }
+
+    public static void UnregisterField(Field field)
     {
         if (field.IsSelected)
             DeselectField(field);
         Fields.Remove(field);
+        field.NotifyFieldDeleted();
     }
 
 
@@ -245,6 +255,9 @@ public class Editor
     {
         foreach (var f in saveList)
         {
+            if (string.IsNullOrWhiteSpace(f.Content))
+                continue;
+            
             Field field = f.Type switch
             {
                 "text" => new TextField(f.PosX, f.PosY) { Text = f.Content },
@@ -351,6 +364,15 @@ public class Editor
                 DialogManager.CloseDialog();
             return;
         }
+
+        if (ctrl)
+        {
+            if (key == "z")
+                EditorController.Undo();
+            else if (key == "y")
+                EditorController.Redo();
+            return;
+        }
         
         if (SelectionCount == 0)
         {
@@ -389,12 +411,6 @@ public class Editor
                     if (ctrl)
                         ShowSaveDialog();
                     break;
-                case "z":
-                    EditorController.Undo();
-                    break;
-                case "y":
-                    EditorController.Redo();
-                    break;
             }
         }
         else
@@ -405,14 +421,7 @@ public class Editor
                     DeselectAllFields();
                     break;
                 case "delete":
-                    var selected = SelectedFields.ToArray();
-                    foreach (var field in selected)
-                    {
-                        if (field.IsEditing)
-                            continue;
-                    
-                        DeleteField(field);
-                    }
+                    DeleteSelectedFields();
                     SaveCachedFile();
                     break;
             }

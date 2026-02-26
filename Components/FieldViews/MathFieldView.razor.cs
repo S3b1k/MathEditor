@@ -1,4 +1,5 @@
 using MathEditor.Models;
+using MathEditor.Models.Actions;
 using MathEditor.Pages;
 using MathEditor.Services;
 using Microsoft.JSInterop;
@@ -7,57 +8,65 @@ namespace MathEditor.Components.FieldViews;
 
 public partial class MathFieldView : BaseFieldView<MathField>
 {
-    private DotNetObjectReference<MathFieldView>? _dotnetRef;
-    
-    
     protected override void OnInitialized()
     {
         Field.OnFieldDeselected += OnDeselect;
+        Field.OnValueUpdated += OnLatexUpdated;
+        Field.OnFieldDeleted += OnDelete;
     }
 
+    private void OnDelete()
+    {
+        Field.OnFieldDeselected -= OnDeselect;
+        Field.OnValueUpdated -= OnLatexUpdated;
+        Field.OnFieldDeleted -= OnDelete;
+    }
+    
 
-    private async Task UpdateLatex(string latex)
+    [JSInvokable]
+    public async Task OnMathChanged(string latex) =>
+        await UpdateFieldView();
+
+    private async void OnLatexUpdated()
     {
         try
         {
-            Field.Latex = latex;
-            await JS.InvokeVoidAsync("mathFieldInterop.setValue", ContentRef, latex);
-            
-            var width = Canvas.SnapCeil(await JS.InvokeAsync<double>("mathFieldInterop.getWidth", ContentRef));
+            await JS.InvokeVoidAsync("mathField.setValue", ContentRef, Field.Latex);
+            await UpdateFieldView(); 
+        }
+        catch (Exception e) { Console.Error.WriteLine(e); }
+    }
+    private async Task UpdateFieldView()
+    {
+        try
+        {
+            var width = await JS.InvokeAsync<double>("mathField.getWidth", ContentRef);
+            width = Canvas.SnapCeil(width);
             width += Canvas.BaseCellSize * 4;
         
             Field.Width = Math.Max(Field.Width, width);
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        catch (Exception e) { Console.Error.WriteLine(e); }
     }
     
     
-    #region events
     private async void OnDeselect()
     {
         try
         {
-            Field.IsEditing = false;
-            
-            var text = await JS.InvokeAsync<string>("mathFieldInterop.getValue", ContentRef);
-            if(string.IsNullOrWhiteSpace(text))
+            var latex = await JS.InvokeAsync<string>("mathField.getValue", ContentRef);
+            if (string.IsNullOrWhiteSpace(latex))
+            {
                 Editor.DeleteField(Field);
+                return;
+            }
+            
+            if (Field.IsEditing)
+                EditorController.ExecuteAction(new ChangeFieldAction(Field, Field.Latex, latex));
+            Field.IsEditing = false;
         }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-        }
+        catch (Exception e) { Console.Error.WriteLine(e); }
     }
-    
-    [JSInvokable]
-    public async Task OnMathChanged(string latex)
-    {
-        await UpdateLatex(latex);
-    }
-    #endregion
 
 
     #region overrides
@@ -68,10 +77,7 @@ public partial class MathFieldView : BaseFieldView<MathField>
             base.StartEditing();
             await JS.InvokeVoidAsync("mathEditor.focusElement", ContentRef);
         }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-        }
+        catch (Exception e) { Console.Error.WriteLine(e); }
     }
     #endregion
 
@@ -103,8 +109,10 @@ public partial class MathFieldView : BaseFieldView<MathField>
     {
         if (firstRender)
         {
-            _dotnetRef = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("mathFieldInterop.init", ContentRef, _dotnetRef, Field.Latex);
+            await JS.InvokeVoidAsync("mathField.init", 
+                                     ContentRef, 
+                                     DotNetObjectReference.Create(this), 
+                                     Field.Latex);
         }
     }
 }

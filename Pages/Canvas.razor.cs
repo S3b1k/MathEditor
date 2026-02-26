@@ -1,5 +1,6 @@
 using System.Globalization;
 using MathEditor.Models;
+using MathEditor.Models.Actions;
 using MathEditor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -44,6 +45,7 @@ public partial class Canvas : ComponentBase
     // Fields
     private bool _isInteractingWithField;
     private List<Field> Fields => Editor.Fields;
+    private List<Field> SelectedFields => Editor.SelectedFields;
     
     // Selecting
     private bool _isSelecting;
@@ -252,10 +254,40 @@ public partial class Canvas : ComponentBase
             StateHasChanged();
         }
 
-        foreach (var field in Fields)
+        List<Field> draggedFields = new();
+        Field? resizingField = null;
+        
+        foreach (var field in SelectedFields)
         {
+            if (field is { IsDragging: true, IsResizing: false } && (
+                    Math.Abs(field.StartPosX - field.PosX) > 0.1 ||
+                    Math.Abs(field.StartPosY - field.PosY) > 0.1)) 
+            {
+                draggedFields.Add(field);
+            }
+            else if(field.IsResizing)
+                resizingField = field;
+            
             field.IsDragging = false;
             field.IsResizing = false;
+        }
+
+        if (draggedFields.Count > 0)
+        {
+            var field = draggedFields[0];
+            var dragOffset = (field.PosX - field.StartPosX, field.PosY - field.StartPosY);
+            EditorController.RegisterAction(new MoveFieldsAction(draggedFields.ToArray(), dragOffset));
+            Console.WriteLine("Moved!");
+        }
+
+        if (resizingField != null)
+        {
+            EditorController.RegisterAction(new ScaleFieldAction(
+                resizingField,
+                ( resizingField.Width - resizingField.StartWidth, resizingField.Height - resizingField.StartHeight), 
+                (resizingField.ResizeStartPosX, resizingField.ResizeStartPosY),
+                (resizingField.PosX, resizingField.PosY)));
+            Console.WriteLine(resizingField.ResizeStartPosX + ", " + resizingField.ResizeStartPosY);
         }
 
         if (_isInteractingWithField)

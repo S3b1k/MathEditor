@@ -14,4 +14,16 @@ public class TextField(double x, double y) : Field(x, y)
         Height = Height,
         Content = Text
     };
+
+    
+    public override Field Copy()
+    {
+        return new TextField(PosX, PosY)
+        {
+            Id = Id,
+            Width = Width,
+            Height = Height,
+            Text = Text,
+        };
+    }
 }

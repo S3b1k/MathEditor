@@ -11,6 +11,6 @@ public class CreateFieldAction(Field field) : IUndoableAction
     
     public void Undo()
     {
-        Editor.DeleteField(field);
+        Editor.UnregisterField(field);
     }
 }
