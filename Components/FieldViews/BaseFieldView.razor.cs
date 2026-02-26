@@ -43,18 +43,10 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
         OnStartEditing.InvokeAsync(e);
     
     private void StartResize(PointerEventArgs e, Field.ResizeDirection direction)
-    {
-        Field.StartWidth = Field.Width;
-        Field.StartHeight = Field.Height;
-        Editor.BeginFieldResize(Field, direction, (e.ClientX, e.ClientY));
-    }
+        => Editor.BeginFieldResize(Field, direction, (e.ClientX, e.ClientY));
 
-    private void StartDrag(PointerEventArgs e)
-    {
-        Field.StartPosX = Field.PosX;
-        Field.StartPosY = Field.PosY;
-        Editor.BeginFieldDrag(Field, e.ClientX, e.ClientY);
-    }
+    private void StartDrag(PointerEventArgs e) 
+        => Editor.BeginFieldDrag(e.ClientX, e.ClientY);
 
     #endregion
     

@@ -1,10 +1,16 @@
 window.mathEditor = {
     startRenderLoop: function (dotnetRef) {
-        function loop() {
-            dotnetRef.invokeMethodAsync("OnAnimationFrame");
+        function loop(timestamp) {
+            dotnetRef.invokeMethodAsync("OnAnimationFrame", timestamp);
             requestAnimationFrame(loop);
         }
         requestAnimationFrame(loop);
+    },
+    getViewportSize: function () {
+        return {
+            width: window.innerWidth,
+            height: window.innerHeight
+        }
     },
     setTitle: function (title) {
         const name = "Math Editor";
@@ -67,6 +73,15 @@ window.mathEditor = {
             reader.readAsText(file);
         })
     },
+    copyToClipboard: async function (content) {
+        await navigator.clipboard.writeText(content);
+    },
+    registerPasteHandler: function (dotnetRef) {
+        document.addEventListener("paste", (event) => {
+            const content = event.clipboardData.getData("text");
+            dotnetRef.invokeMethodAsync("OnPaste", content);
+        });
+    },
     toggleTheme: function (theme) {
         document.documentElement.setAttribute('data-theme', theme);
     }
@@ -81,11 +96,10 @@ window.keyboardActions = {
             const shift = e.shiftKey;
             const alt = e.altKey;
 
-            if (ctrl) {
-                if (key === "o" || key === "s" || key === "z" || key === "y")
-                    e.preventDefault();
-            }
-
+            const reservedKeys = new Set(["c", "z", "y", "s", "o"])
+            if (ctrl && reservedKeys.has(key))
+                e.preventDefault();
+            
             dotnetRef.invokeMethodAsync("OnKeypress", key, ctrl, shift, alt);
         });
     }

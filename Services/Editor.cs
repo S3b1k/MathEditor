@@ -1,8 +1,10 @@
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using MathEditor.Components.DialogViews;
 using MathEditor.Models;
 using MathEditor.Models.Actions;
+using MathEditor.Pages;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -18,7 +20,7 @@ public class Editor
         CreateMathField
     }
 
-    private static Camera _cam;
+    private static Camera? _cam;
     private static ILocalStorageService? _localStorage;
     private static IJSRuntime? _js;
     
@@ -70,7 +72,9 @@ public class Editor
     #region Field Factory
 
     public static void CreateNewField(Field field) =>
-        EditorController.ExecuteAction(new CreateFieldAction(field));
+        EditorController.ExecuteAction(new CreateFieldsAction(field));
+    public static void CreateNewFields(Field[] fields) =>
+        EditorController.ExecuteAction(new CreateFieldsAction(fields));
     
     public static void RegisterField(Field field, bool selectField = true, bool suppressModeSwitch = false)
     {
@@ -155,13 +159,15 @@ public class Editor
     }
 
 
-    public static void BeginFieldDrag(Field field, double mouseX, double mouseY)
+    public static void BeginFieldDrag(double mouseX, double mouseY)
     {
         foreach (var selected in SelectedFields)
         {
-            var dragOffset = _cam.ComputeDragOffset(selected, mouseX, mouseY);
+            var dragOffset = _cam!.ComputeDragOffset(selected, mouseX, mouseY);
             selected.DragOffsetX = dragOffset.offsetX;
             selected.DragOffsetY = dragOffset.offsetY;
+            selected.StartPosX = selected.PosX;
+            selected.StartPosY = selected.PosY;
             
             selected.IsDragging = true;
         }
@@ -177,6 +183,8 @@ public class Editor
         field.ResizeStartMouseY = startPos.y;
         field.ResizeStartPosX = field.PosX;
         field.ResizeStartPosY = field.PosY;
+        field.StartWidth = field.Width;
+        field.StartHeight = field.Height;
         field.ResizeDir = dir;
     }
 
@@ -257,11 +265,12 @@ public class Editor
         {
             if (string.IsNullOrWhiteSpace(f.Content))
                 continue;
-            
+
+            (double x, double y) pos = (f.PosX, f.PosY);
             Field field = f.Type switch
             {
-                "text" => new TextField(f.PosX, f.PosY) { Text = f.Content },
-                "math" => new MathField(f.PosX, f.PosY) { Latex = f.Content },
+                "text" => new TextField(pos.x, pos.y) { Text = f.Content },
+                "math" => new MathField(pos.x, pos.y) { Latex = f.Content },
                 _ => throw new Exception($"Unknown field type: {f.Type}")
             };
 
@@ -356,7 +365,7 @@ public class Editor
     
     
     [JSInvokable]
-    public void OnKeypress(string key, bool ctrl, bool shift, bool alt)
+    public async void OnKeypress(string key, bool ctrl, bool shift, bool alt)
     {
         if (DialogManager.DialogOpen)
         {
@@ -368,10 +377,15 @@ public class Editor
         if (ctrl)
         {
             if (key == "z")
+            {
                 EditorController.Undo();
-            else if (key == "y")
+                return;
+            }
+            if (key == "y")
+            {
                 EditorController.Redo();
-            return;
+                return;
+            }
         }
         
         if (SelectionCount == 0)
@@ -424,7 +438,57 @@ public class Editor
                     DeleteSelectedFields();
                     SaveCachedFile();
                     break;
+                case "c":
+                    if (ctrl)
+                    {
+                        var fields = SelectedFields.Select(f => f.ToSaveData()).ToList();
+                        var copied = JsonSerializer.Serialize(fields, _serializerOptions);
+                        await _js!.InvokeVoidAsync("mathEditor.copyToClipboard", copied);
+                    }
+                    break;
             }
+        }
+    }
+    
+    [JSInvokable]
+    public async Task OnPaste(string content)
+    {
+        DeselectAllFields();
+        try
+        {
+            var data = JsonSerializer.Deserialize<List<FieldSaveData>>(content);
+            List<Field> fields = new();
+            if (data != null)
+            {
+                foreach (var f in data)
+                {
+                    if (string.IsNullOrWhiteSpace(f.Content))
+                        continue;
+
+                    (double x, double y) pos = (f.PosX + Canvas.BaseCellSize * 3, f.PosY + Canvas.BaseCellSize * 3);
+
+                    Field field = f.Type switch
+                    {
+                        "text" => new TextField(pos.x, pos.y) { Text = f.Content },
+                        "math" => new MathField(pos.x, pos.y) { Latex = f.Content },
+                        _ => throw new Exception($"Unknown field type: {f.Type}")
+                    };
+
+                    field.Width = f.Width;
+                    field.Height = f.Height;
+
+                    fields.Add(field);
+                }
+            }
+            
+            CreateNewFields(fields.ToArray());
+        }
+        catch (Exception)
+        {
+            CreateNewField(new TextField(0, 0) { Text = content });
+
+            var screen = await _js!.InvokeAsync<ViewportSize>("mathEditor.getViewportSize");
+            _cam!.GoToWorldPoint((0, 0), screen.Width, screen.Height);
         }
     }
     
@@ -442,5 +506,11 @@ public class Editor
     {
         public string Content { get; set; } = "";
         public string Name { get; set; } = "";
+    }
+
+    private class ViewportSize
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
     }
 }

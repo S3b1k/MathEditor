@@ -56,6 +56,8 @@ public partial class Canvas : ComponentBase
     // Editor
     private Editor.EditorMode _previousMode = Editor.EditorMode.Idle;
     public required RenderFragment Dialog { get; set; }
+
+    private double _lastTimeStamp;
     
     #endregion
 
@@ -276,8 +278,8 @@ public partial class Canvas : ComponentBase
         {
             var field = draggedFields[0];
             var dragOffset = (field.PosX - field.StartPosX, field.PosY - field.StartPosY);
+            Console.WriteLine(field.StartPosX + ", " + field.StartPosY);
             EditorController.RegisterAction(new MoveFieldsAction(draggedFields.ToArray(), dragOffset));
-            Console.WriteLine("Moved!");
         }
 
         if (resizingField != null)
@@ -287,7 +289,6 @@ public partial class Canvas : ComponentBase
                 ( resizingField.Width - resizingField.StartWidth, resizingField.Height - resizingField.StartHeight), 
                 (resizingField.ResizeStartPosX, resizingField.ResizeStartPosY),
                 (resizingField.PosX, resizingField.PosY)));
-            Console.WriteLine(resizingField.ResizeStartPosX + ", " + resizingField.ResizeStartPosY);
         }
 
         if (_isInteractingWithField)
@@ -349,14 +350,36 @@ public partial class Canvas : ComponentBase
     
     
     [JSInvokable]
-    public void OnAnimationFrame()
+    public async Task OnAnimationFrame(double timeStamp)
     {
-        const double speed = 0.15;
-        if (Zooming)
+        const double smooth = 0.15;
+        const double speed = 12;
+        
+        if (_lastTimeStamp == 0)
+        {
+            _lastTimeStamp = timeStamp;
+            return;
+        }
+
+        var deltaTime = (timeStamp - _lastTimeStamp) / 1000;
+        _lastTimeStamp = timeStamp;
+
+        if (Cam.IsMoving)
+        {
+            Cam.PanX += (Cam.TargetPanX - Cam.PanX) * speed * deltaTime;
+            Cam.PanY += (Cam.TargetPanY - Cam.PanY) * speed * deltaTime;
+
+            if (Math.Abs(Cam.PanX - Cam.TargetPanX) < 5 && Math.Abs(Cam.PanY - Cam.TargetPanY) < 5)
+            {
+                Cam.IsMoving = false;
+                Console.WriteLine("asdf");                
+            }
+        }
+        else if (Zooming)
         {
             var oldZoom = Zoom;
 
-            Cam.Zoom = oldZoom + (TargetZoom - oldZoom) * speed;
+            Cam.Zoom = oldZoom + (TargetZoom - oldZoom) * smooth;
 
             if (Math.Abs(Zoom - TargetZoom) < 0.001f)
             {
@@ -381,16 +404,18 @@ public partial class Canvas : ComponentBase
             if (Math.Abs(Cam.VelY) < 0.01) Cam.VelY = 0;
         }
         
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
-    
+
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            var editorReference = DotNetObjectReference.Create(Editor);
             await JS.InvokeVoidAsync("mathEditor.startRenderLoop", DotNetObjectReference.Create(this));
-            await JS.InvokeVoidAsync("keyboardActions.register", DotNetObjectReference.Create(Editor));
+            await JS.InvokeVoidAsync("keyboardActions.register", editorReference);
+            await JS.InvokeVoidAsync("mathEditor.registerPasteHandler", editorReference);
         }
     }
 
