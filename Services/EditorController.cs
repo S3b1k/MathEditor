@@ -1,29 +1,43 @@
 using MathEditor.Models;
+using MathEditor.Models.Actions;
 
 namespace MathEditor.Services;
 
 public class EditorController
 {
-    
-}
+    public static Stack<IUndoableAction> UndoStack { get; } = new();
+    public static Stack<IUndoableAction> RedoStack { get; } = new();
 
-public class Action
-{
-    public ActionType Type;
-    public Field Before;
-    public Field After;
 
-    public Action(ActionType type, Field before, Field after)
+    public static void ExecuteAction(IUndoableAction action)
     {
-        Type = type;
-        Before = before;
-        After = after;
+        action.Execute();
+        UndoStack.Push(action);
+        RedoStack.Clear();
+        Editor.SaveCachedFile();
     }
-}
+    
 
-public enum ActionType
-{
-    Created,
-    Removed,
-    TransformChange
+    public static void Undo()
+    {
+        if (UndoStack.Count == 0)
+            return;
+        
+        var action = UndoStack.Pop();
+        action.Undo();
+        RedoStack.Push(action);
+        Editor.SaveCachedFile();
+    }
+
+
+    public static void Redo()
+    {
+        if (RedoStack.Count == 0)
+            return;
+        
+        var action = RedoStack.Pop();
+        action.Execute();
+        UndoStack.Push(action);
+        Editor.SaveCachedFile();
+    }
 }

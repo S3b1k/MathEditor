@@ -2,6 +2,7 @@ using System.Text.Json;
 using Blazored.LocalStorage;
 using MathEditor.Components.DialogViews;
 using MathEditor.Models;
+using MathEditor.Models.Actions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -68,7 +69,10 @@ public class Editor
 
     #region Field Factory
 
-    private static void CreateField(Field field, bool selectField = true, bool suppressModeSwitch = false)
+    public static void CreateNewField(Field field) =>
+        EditorController.ExecuteAction(new CreateFieldAction(field));
+    
+    public static void RegisterField(Field field, bool selectField = true, bool suppressModeSwitch = false)
     {
         Fields.Add(field);
         
@@ -77,14 +81,12 @@ public class Editor
         
         if (!suppressModeSwitch)
             SetMode(EditorMode.Idle);
-
-        SaveCachedFile();
     }
     
-    public static void CreateTextField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
-        => CreateField(new TextField(posX, posY), selectField, suppressModeSwitch);
-    public static void CreateMathField(double posX, double posY, bool selectField = true, bool suppressModeSwitch = false) 
-        => CreateField(new MathField(posX, posY), selectField, suppressModeSwitch);
+    public static void CreateTextField(double posX, double posY) 
+        => CreateNewField(new TextField(posX, posY));
+    public static void CreateMathField(double posX, double posY) 
+        => CreateNewField(new MathField(posX, posY));
 
     #endregion
  
@@ -135,7 +137,7 @@ public class Editor
         SelectedFields.Clear();
     }
     
-    public void DeleteField(Field field)
+    public static void DeleteField(Field field)
     {
         if (field.IsSelected)
             DeselectField(field);
@@ -253,7 +255,7 @@ public class Editor
             field.Width = f.Width;
             field.Height = f.Height;
 
-            CreateField(field, selectField: false);
+            RegisterField(field, selectField: false);
         }
     }
     
@@ -386,6 +388,12 @@ public class Editor
                 case "s":
                     if (ctrl)
                         ShowSaveDialog();
+                    break;
+                case "z":
+                    EditorController.Undo();
+                    break;
+                case "y":
+                    EditorController.Redo();
                     break;
             }
         }

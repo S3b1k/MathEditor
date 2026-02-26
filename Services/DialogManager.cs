@@ -7,9 +7,7 @@ public class DialogManager
 {
     private static BaseDialogView? Dialog { get; set; }
     public static bool DialogOpen;
-
-    private Dictionary<string, object> dialogParams;
-
+    
 
     public static void OpenDialog()
     {

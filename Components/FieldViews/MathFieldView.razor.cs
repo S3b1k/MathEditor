@@ -1,5 +1,6 @@
 using MathEditor.Models;
 using MathEditor.Pages;
+using MathEditor.Services;
 using Microsoft.JSInterop;
 
 namespace MathEditor.Components.FieldViews;
