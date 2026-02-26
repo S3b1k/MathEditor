@@ -33,6 +33,11 @@ public partial class Canvas : ComponentBase
     
     #endregion
     
+    // Grid
+    public static bool EnableGrid;
+    public static bool EnableOuterGrid;
+    
+    
     // Zooming
     private double Zoom => Cam.Zoom;
     private double TargetZoom => Cam.TargetZoom;
@@ -413,6 +418,12 @@ public partial class Canvas : ComponentBase
             Cam.ScreenWidth = screen.Width;
             Cam.ScreenHeight = screen.Height;
             Cam.MoveToWorldPoint((0, 0), true);
+            
+            EnableGrid = !await LocalStorage.ContainKeyAsync("grid") || 
+                          await LocalStorage.GetItemAsync<bool>("grid");
+            
+            EnableOuterGrid = !await LocalStorage.ContainKeyAsync("outerGrid") ||
+                               await LocalStorage.GetItemAsync<bool>("outerGrid");
             
             var editorReference = DotNetObjectReference.Create(Editor);
             await JS.InvokeVoidAsync("mathEditor.startRenderLoop", DotNetObjectReference.Create(this));

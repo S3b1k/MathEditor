@@ -1,8 +1,10 @@
 ﻿@page "/"
+@using Blazored.LocalStorage
 @using MathEditor.Components;
 @using MathEditor.Services;
 
 @inject IJSRuntime JS
+@inject ILocalStorageService LocalStorage;
 @inject Editor Editor;
 @inject Camera Cam;
 
@@ -16,37 +18,43 @@
     
     
     @* Grid *@
-    <svg class="grid @(Editor.Mode == Editor.EditorMode.Pan ? _panning ? "panning" : "pan" : "")" 
-         width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <pattern id="smallGrid"
-                     width="@F(BaseCellSize)"
-                     height="@F(BaseCellSize)"
-                     patternUnits="userSpaceOnUse"
-                     patternTransform="translate(@F(Cam.PanX) @F(Cam.PanY)) scale(@F(Cam.Zoom))">
+    @if (EnableGrid)
+    {
+        <svg class="grid @(Editor.Mode == Editor.EditorMode.Pan ? _panning ? "panning" : "pan" : "")" 
+             width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="smallGrid"
+                         width="@F(BaseCellSize)"
+                         height="@F(BaseCellSize)"
+                         patternUnits="userSpaceOnUse"
+                         patternTransform="translate(@F(Cam.PanX) @F(Cam.PanY)) scale(@F(Cam.Zoom))">
                 
-                <path d="M 0 0 L @F(BaseCellSize) 0" fill="none" stroke="var(--color-grid)" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
-                <path d="M 0 0 L 0 @F(BaseCellSize)" fill="none" stroke="var(--color-grid)" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
-            </pattern>
+                    <path d="M 0 0 L @F(BaseCellSize) 0" fill="none" stroke="var(--color-grid)" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
+                    <path d="M 0 0 L 0 @F(BaseCellSize)" fill="none" stroke="var(--color-grid)" stroke-width="0.5" vector-effect="non-scaling-stroke"/>
+                </pattern>
 
-            <pattern id="bigGrid"
-                     width="@F(BaseCellSize * 5)"
-                     height="@F(BaseCellSize * 5)"
-                     patternUnits="userSpaceOnUse"
-                     patternTransform="translate(@F(Cam.PanX) @F(Cam.PanY)) scale(@F(Cam.Zoom))">
+                @if (EnableOuterGrid)
+                {
+                    <pattern id="bigGrid"
+                             width="@F(BaseCellSize * 5)"
+                             height="@F(BaseCellSize * 5)"
+                             patternUnits="userSpaceOnUse"
+                             patternTransform="translate(@F(Cam.PanX) @F(Cam.PanY)) scale(@F(Cam.Zoom))">
                 
-                <rect width="@F(BaseCellSize * 5)" height="@F(BaseCellSize * 5)" fill="transparent" />
+                        <rect width="@F(BaseCellSize * 5)" height="@F(BaseCellSize * 5)" fill="transparent" />
 
-                <path d="M 0 0 L @F(BaseCellSize * 5) 0" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                <path d="M 0 0 L 0 @F(BaseCellSize * 5)" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
-            </pattern>
-        </defs>
+                        <path d="M 0 0 L @F(BaseCellSize * 5) 0" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                        <path d="M 0 0 L 0 @F(BaseCellSize * 5)" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                    </pattern>
+                }
+            </defs>
 
-        <rect width="100%" height="100%" fill="var(--color-grid-bg)" />
+            <rect width="100%" height="100%" fill="var(--color-grid-bg)" />
         
-        <rect width="100%" height="100%" fill="url(#smallGrid)" />
-        <rect width="100%" height="100%" fill="url(#bigGrid)" />
-    </svg>
+            <rect width="100%" height="100%" fill="url(#smallGrid)" />
+            <rect width="100%" height="100%" fill="url(#bigGrid)" />
+        </svg>
+    }
 
     
     @* View Handling *@

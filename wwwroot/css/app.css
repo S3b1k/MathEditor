@@ -1,5 +1,5 @@
 html, body {
-    background-color: var(--color-bg);
+    background-color: var(--color-grid-bg);
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
@@ -155,7 +155,7 @@ code {
     --color-fg: #fff;
     --color-bg: #232329;
     --color-bg-2: #3a3a43;
-    --color-grid-bg: #121212;
+    --color-grid-bg: #161616;
     --color-grid: rgba(255, 255, 255, 0.2);
 
     --color-selection: #396fae;

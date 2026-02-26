@@ -126,10 +126,11 @@
 
 
 /* Context Menu */
-.context-menu {
+.menu {
     scale: 1 0;
     transform-origin: top;
     width: 220px;
+    max-height: 50vh;
     position: absolute;
     margin: 16px;
     padding: 5px;
@@ -142,13 +143,18 @@
     display: flex;
     flex-direction: column;
     
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-bg-2) var(--color-bg);
+    
     border: none;
     border-radius: 10px;
     background-color: var(--color-bg);
     
     transition: opacity 0.2s linear, scale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);;
 }
-.context-menu.visible {
+.menu.visible {
     scale: 1;
     
     visibility: visible;
@@ -157,10 +163,11 @@
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
 }
 
-.context-menu button {
+.menu button {
     display: flex;
     align-items: center;
     
+    min-height: 32px;
     height: 32px;
     padding: 0 10px;
     
@@ -177,11 +184,11 @@
 [data-theme="dark"] img {
     filter: invert(93%) sepia(100%) saturate(0%) hue-rotate(248deg) brightness(106%) contrast(106%);
 }
-.context-menu button:hover {
+.menu button:hover {
     background: var(--color-menu-btn-hover);
 }
 
-.context-menu img {
+.menu img {
     width: 17px;
     height: 17px;
     margin-right: 5px;
@@ -190,6 +197,16 @@
 }
 
 
-.context-menu button .shortcut {
+.menu button .shortcut {
     margin-left: auto;
+}
+
+
+.menu .header {
+    margin-left: 5px;
+    margin-top: 5px;
+    
+    color: var(--color-text);
+    font-weight: bold;
+    font-size: 10pt;
 }

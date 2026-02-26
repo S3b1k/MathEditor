@@ -207,7 +207,6 @@ public class Editor
     
     
     #region Editor Save/Load
-    
     private static async void RetrieveData()
     {
         try
