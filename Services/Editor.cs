@@ -376,15 +376,31 @@ public class Editor
 
         if (ctrl)
         {
-            if (key == "z")
+            switch (key)
             {
-                EditorController.Undo();
-                return;
-            }
-            if (key == "y")
-            {
-                EditorController.Redo();
-                return;
+                case "a":
+                    foreach (var field in Fields)
+                        SelectField(field);
+                    return;
+                case "z":
+                    EditorController.Undo();
+                    return;
+                case "y":
+                    EditorController.Redo();
+                    return;
+                case "s":
+                    ShowSaveDialog();
+                    return;
+                case "o":
+                    var parameters = new DialogParams
+                    {
+                        ["TitleText"] = "Warning",
+                        ["Text"] = "Loading a file will clear the grid. Any unsaved " +
+                                   "changes will not be recoverable. Do you want to continue?",
+                        ["OnConfirm"] = OpenFilePicker
+                    };
+                    ShowDialog(typeof(ConfirmationDialogView), parameters);
+                    return;
             }
         }
         
@@ -401,30 +417,9 @@ public class Editor
                 case "m":
                     SetMode(EditorMode.CreateMathField);
                     break;
-                case "a":
-                    if (ctrl)
-                    {
-                        foreach (var field in Fields)
-                            SelectField(field);
-                    }
-                    break;
-                case "o":
-                    if (ctrl)
-                    {
-                        var parameters = new DialogParams
-                        {
-                            ["TitleText"] = "Warning",
-                            ["Text"] = "Loading a file will clear the grid. Any unsaved " +
-                                       "changes will not be recoverable. Do you want to continue?",
-                            ["OnConfirm"] = OpenFilePicker
-                        };
-                        ShowDialog(typeof(ConfirmationDialogView), parameters);
-                    }
-                    break;
-                case "s":
-                    if (ctrl)
-                        ShowSaveDialog();
-                    break;
+                case "1":
+                    MoveCam(0, 0);
+                    return;
             }
         }
         else
@@ -451,7 +446,7 @@ public class Editor
     }
     
     [JSInvokable]
-    public async Task OnPaste(string content)
+    public void OnPaste(string content)
     {
         DeselectAllFields();
         try
@@ -486,11 +481,12 @@ public class Editor
         catch (Exception)
         {
             CreateNewField(new TextField(0, 0) { Text = content });
-
-            var screen = await _js!.InvokeAsync<ViewportSize>("mathEditor.getViewportSize");
-            _cam!.GoToWorldPoint((0, 0), screen.Width, screen.Height);
+            MoveCam(0, 0);
         }
     }
+
+    private static void MoveCam(double posX, double posY) 
+        => _cam!.MoveToWorldPoint((posX, posY));
     
     
     #region Event Notifications
@@ -506,11 +502,5 @@ public class Editor
     {
         public string Content { get; set; } = "";
         public string Name { get; set; } = "";
-    }
-
-    private class ViewportSize
-    {
-        public double Width { get; set; }
-        public double Height { get; set; }
     }
 }

@@ -19,16 +19,27 @@ public class Camera
     
     public double VelX { get; set; }
     public double VelY { get; set; }
+    
+    public double ScreenWidth { get; set; }
+    public double ScreenHeight { get; set; }
+    
 
-
-    public void GoToWorldPoint((double x, double y) pos, double screenWidth, double screenHeight)
+    public void MoveToWorldPoint((double x, double y) pos, bool teleport = false)
     {
-        var cx = screenWidth / 2;
-        var cy = screenHeight / 2;
-        
-        TargetPanX = cx - pos.x * Zoom;
-        TargetPanY = cy - pos.y * Zoom;
-        IsMoving = true;
+        var cx = ScreenWidth / 2;
+        var cy = ScreenHeight / 2;
+
+        if (teleport)
+        {
+            PanX = cx - pos.x * Zoom;
+            PanY = cy - pos.y * Zoom;
+        }
+        else
+        {
+            TargetPanX = cx - pos.x * Zoom;
+            TargetPanY = cy - pos.y * Zoom;
+            IsMoving = true;
+        }
     }
     
     

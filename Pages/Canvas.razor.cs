@@ -147,11 +147,11 @@ public partial class Canvas : ComponentBase
         if (DialogManager.DialogOpen)
             return;
         
-        if (Editor.Mode == Editor.EditorMode.Pan && _panning)
+        if (Editor.Mode == Editor.EditorMode.Pan && _panning && !Cam.IsMoving)
         {
             var dx = e.ClientX - _lastX;
             var dy = e.ClientY - _lastY;
-        
+            
             Cam.PanX += dx;
             Cam.PanY += dy;
             Cam.SetVelocity(dx, dy);
@@ -306,7 +306,7 @@ public partial class Canvas : ComponentBase
         {
             const double zoomSpeed = 0.002;
             var zoomFactor = 1 - e.DeltaY * zoomSpeed;
-            Cam.TargetZoom = Math.Clamp(TargetZoom * zoomFactor, .5, 5);
+            Cam.TargetZoom = Math.Clamp(TargetZoom * zoomFactor, .3, 5);
 
             Cam.ZoomMouseX = e.ClientX;
             Cam.ZoomMouseY = e.ClientY;
@@ -370,10 +370,7 @@ public partial class Canvas : ComponentBase
             Cam.PanY += (Cam.TargetPanY - Cam.PanY) * speed * deltaTime;
 
             if (Math.Abs(Cam.PanX - Cam.TargetPanX) < 5 && Math.Abs(Cam.PanY - Cam.TargetPanY) < 5)
-            {
                 Cam.IsMoving = false;
-                Console.WriteLine("asdf");                
-            }
         }
         else if (Zooming)
         {
@@ -412,6 +409,11 @@ public partial class Canvas : ComponentBase
     {
         if (firstRender)
         {
+            var screen = await JS.InvokeAsync<ViewportSize>("mathEditor.getViewportSize");
+            Cam.ScreenWidth = screen.Width;
+            Cam.ScreenHeight = screen.Height;
+            Cam.MoveToWorldPoint((0, 0), true);
+            
             var editorReference = DotNetObjectReference.Create(Editor);
             await JS.InvokeVoidAsync("mathEditor.startRenderLoop", DotNetObjectReference.Create(this));
             await JS.InvokeVoidAsync("keyboardActions.register", editorReference);
@@ -453,4 +455,10 @@ public partial class Canvas : ComponentBase
         }
     }
     #endregion
+    
+    private class ViewportSize
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
 }
