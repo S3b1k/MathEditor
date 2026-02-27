@@ -77,6 +77,11 @@ window.mathEditor = {
         await navigator.clipboard.writeText(content);
     },
     registerPasteHandler: function (dotnetRef) {
+        document.addEventListener("auxclick", (event) => {
+            if (event.button === 1) 
+                event.preventDefault();
+        });
+        
         document.addEventListener("paste", (event) => {
             const content = event.clipboardData.getData("text");
             dotnetRef.invokeMethodAsync("OnPaste", content);
