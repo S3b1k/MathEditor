@@ -1,0 +1,11 @@
+@inherits BaseFieldView<MathEditor.Models.ImageField>
+
+<BaseFieldView Field="Field"
+               OnPointerDown="PointerDown"
+               OnStartEditing="StartEditing">
+    <Body>
+        <img src="data:image/png;base64,@Convert.ToBase64String(Field.ImageData)"
+             alt="ImageField @Field.Id"
+             class="image-content"/>
+    </Body>
+</BaseFieldView>

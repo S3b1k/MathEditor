@@ -270,6 +270,7 @@ public class Editor
             {
                 "text" => new TextField(pos.x, pos.y) { Text = f.Content },
                 "math" => new MathField(pos.x, pos.y) { Latex = f.Content },
+                "image" => new ImageField(pos.x, pos.y, Convert.FromBase64String(f.Content)),
                 _ => throw new Exception($"Unknown field type: {f.Type}")
             };
 
@@ -465,6 +466,7 @@ public class Editor
                     {
                         "text" => new TextField(pos.x, pos.y) { Text = f.Content },
                         "math" => new MathField(pos.x, pos.y) { Latex = f.Content },
+                        "image" => new ImageField(pos.x, pos.y, Convert.FromBase64String(f.Content)),
                         _ => throw new Exception($"Unknown field type: {f.Type}")
                     };
 

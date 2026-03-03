@@ -350,7 +350,7 @@ public partial class Canvas : ComponentBase
             }   
         }
     }
-    
+
     #endregion
     
     

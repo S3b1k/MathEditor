@@ -76,5 +76,4 @@ public abstract class Field(double x, double y)
     public void NotifyValueUpdated() => OnValueUpdated?.Invoke();
 
     public abstract FieldSaveData ToSaveData();
-    public abstract Field Copy();
 }
