@@ -141,6 +141,7 @@ code {
     --color-selection-bg: rgba(74, 144, 226, 0.2);
     
     --color-text: #000;
+    --color-text-invert: #fff;
     --color-text-light: #fff;
     --color-text-dark: #000;
     
@@ -163,6 +164,7 @@ code {
     --color-selection-bg: rgba(64, 127, 200, 0.2);
     
     --color-text: #fff;
+    --color-text-invert: #000;
     
     
     --icon-theme-toggle: url("icons/icon_sun.svg");

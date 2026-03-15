@@ -14,7 +14,8 @@
      @onpointerup="OnPointerUp"
      @onwheel:preventDefault
      @onwheel="OnWheel"
-     @onkeydown="OnKeyDown">
+     @onkeydown="OnKeyDown"
+     @ref="_canvasRef">
     
     
     @* Grid *@
@@ -69,6 +70,18 @@
     {
         <div class="selection-box @(_isFadingSelection ? "fade-out" : "")"
              style="@SelectionBoxStyle">
+        </div>
+    }
+    
+    
+    @* Canvas Drop Overlay *@
+    @if (_showDropOverlay)
+    {
+        <div class="drop-overlay">
+            <div class="drop-overlay-content">
+                <span class="canvas-drop-icon">📂</span>
+                <span class="canvas-drop-text">Drop to load file</span>
+            </div>
         </div>
     }
     

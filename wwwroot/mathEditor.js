@@ -88,7 +88,7 @@ window.mathEditor = {
             if (dragCounter !== 1) return;
 
             const isImage = item.type.startsWith("image/");
-            dotNetRef.invokeMethodAsync("OnCanvasDragEnter", isImage);
+            dotnetRef.invokeMethodAsync("OnCanvasDragEnter", isImage);
         });
 
         element.addEventListener("dragleave", (e) => {
@@ -98,7 +98,7 @@ window.mathEditor = {
 
             dragCounter--;
             if (dragCounter === 0)
-                dotNetRef.invokeMethodAsync("OnCanvasDragLeave");
+                dotnetRef.invokeMethodAsync("OnCanvasDragLeave");
         });
 
         element.addEventListener("dragover", (e) => {
@@ -111,21 +111,21 @@ window.mathEditor = {
 
             const file = e.dataTransfer?.files?.[0];
             if (!file) {
-                dotNetRef.invokeMethodAsync("OnCanvasDragLeave");
+                dotnetRef.invokeMethodAsync("OnCanvasDragLeave");
                 return;
             }
 
             if (file.name.endsWith(".mxe")) {
                 const text = await file.text();
-                dotNetRef.invokeMethodAsync("OnFileDrop", text);
+                dotnetRef.invokeMethodAsync("OnFileDrop", text);
             } else if (file.type.startsWith("image/")) {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    dotNetRef.invokeMethodAsync("OnImageFileDrop", reader.result, e.clientX, e.clientY);
+                    dotnetRef.invokeMethodAsync("OnImageFileDrop", reader.result, e.clientX, e.clientY);
                 };
                 reader.readAsDataURL(file);
             } else {
-                dotNetRef.invokeMethodAsync("OnCanvasDragLeave");
+                dotnetRef.invokeMethodAsync("OnCanvasDragLeave");
             }
         });
     },

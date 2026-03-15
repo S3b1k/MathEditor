@@ -1,4 +1,5 @@
 using System.Globalization;
+using MathEditor.Components.DialogViews;
 using MathEditor.Models;
 using MathEditor.Models.Actions;
 using MathEditor.Services;
@@ -13,6 +14,8 @@ public partial class Canvas : ComponentBase
     #region Properties
  
     public const double BaseCellSize = 18.9;
+    private ElementReference _canvasRef;
+    private bool _showDropOverlay;
     
     #region styles
     
@@ -352,7 +355,56 @@ public partial class Canvas : ComponentBase
             }   
         }
     }
+
+
+    [JSInvokable]
+    public void OnCanvasDragEnter(bool isImage)
+    {
+        if (!isImage)
+            _showDropOverlay = true;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnCanvasDragLeave()
+    {
+        _showDropOverlay = false;
+        StateHasChanged();
+    }
+
+    private string json;
+    public async Task LoadFile()
+    {
+        await Editor.ClearGrid();
+        Editor.DeserializeFields(json);
+        Editor.SaveCachedFile();
+    }
     
+    [JSInvokable]
+    public void OnFileDrop(string json)
+    {
+        this.json = json;
+        _showDropOverlay = false;
+        var parameters = new DialogParams
+        {
+            ["TitleText"] = "Warning",
+            ["Text"] = "Loading a file will clear the grid. Any unsaved " +
+                       "changes will not be recoverable. Do you want to continue?",
+            ["OnConfirm"] = LoadFile
+        };
+        Editor.ShowDialog(typeof(ConfirmationDialogView), parameters);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnImageFileDrop(string dataUrl, double clientX, double clientY)
+    {
+        var worldPos = Cam.ScreenToWorld(clientX, clientY);
+        var field = Field.Create<ImageField>(worldPos.worldX, worldPos.worldY);
+        field.ImageSource = dataUrl;
+        Editor.SaveCachedFile();
+        StateHasChanged();
+    }
     #endregion
     
     
@@ -453,9 +505,11 @@ public partial class Canvas : ComponentBase
             else
                 Cam.MoveToWorldPoint((0, 0), true);
             
+            var canvasReference = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("mathEditor.registerCanvasDropHandler", _canvasRef, canvasReference);
             
             var editorReference = DotNetObjectReference.Create(Editor);
-            await JS.InvokeVoidAsync("mathEditor.startRenderLoop", DotNetObjectReference.Create(this));
+            await JS.InvokeVoidAsync("mathEditor.startRenderLoop", canvasReference);
             await JS.InvokeVoidAsync("keyboardActions.register", editorReference);
             await JS.InvokeVoidAsync("clipBoard.registerPasteHandler", editorReference);
         }

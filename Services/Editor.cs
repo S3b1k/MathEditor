@@ -285,7 +285,7 @@ public class Editor
     public static string SerializeFields() => 
         JsonSerializer.Serialize(GetSaveList(), _serializerOptions);
     
-    private static void DeserializeFields(string json) =>
+    public static void DeserializeFields(string json) =>
         ReadSaveList(JsonSerializer.Deserialize<List<FieldSaveData>>(json)!);
     
     
@@ -373,12 +373,6 @@ public class Editor
             if (key == "escape")
                 DialogManager.CloseDialog();
             return;
-        }
-
-        if (key == "i")
-        {
-            var center = _cam!.GetScreenCenter();
-            Field.Create<ImageField>(center.x, center.y);
         }
         
         if (ctrl)
