@@ -39,6 +39,13 @@
             loader.classList.add("fade-out");
             loader.addEventListener("transitionend", () => loader.remove());
         };
+
+        
+        window.addEventListener("wheel", (e) => {
+            if (e.ctrlKey) e.preventDefault();
+        }, { passive: false });
+        
+        window.addEventListener("contextmenu", (e) => e.preventDefault());
     </script>
 </head>
 
