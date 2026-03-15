@@ -73,22 +73,80 @@ window.mathEditor = {
             reader.readAsText(file);
         })
     },
-    copyToClipboard: async function (content) {
-        await navigator.clipboard.writeText(content);
-    },
-    registerPasteHandler: function (dotnetRef) {
-        document.addEventListener("auxclick", (event) => {
-            if (event.button === 1) 
-                event.preventDefault();
-        });
-        
-        document.addEventListener("paste", (event) => {
-            const content = event.clipboardData.getData("text");
-            dotnetRef.invokeMethodAsync("OnPaste", content);
-        });
-    },
     toggleTheme: function (theme) {
         document.documentElement.setAttribute('data-theme', theme);
+    },
+    registerCanvasDropHandler: function (element, dotnetRef) {
+        let dragCounter = 0;
+
+        element.addEventListener("dragenter", (e) => {
+            e.preventDefault();
+            const item = e.dataTransfer?.items?.[0];
+            if (!item || item.kind !== "file") return;
+
+            dragCounter++;
+            if (dragCounter !== 1) return;
+
+            const isImage = item.type.startsWith("image/");
+            dotNetRef.invokeMethodAsync("OnCanvasDragEnter", isImage);
+        });
+
+        element.addEventListener("dragleave", (e) => {
+            e.preventDefault();
+            const item = e.dataTransfer?.items?.[0];
+            if (!item || item.kind !== "file") return;
+
+            dragCounter--;
+            if (dragCounter === 0)
+                dotNetRef.invokeMethodAsync("OnCanvasDragLeave");
+        });
+
+        element.addEventListener("dragover", (e) => {
+            e.preventDefault();
+        });
+
+        element.addEventListener("drop", async (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+
+            const file = e.dataTransfer?.files?.[0];
+            if (!file) {
+                dotNetRef.invokeMethodAsync("OnCanvasDragLeave");
+                return;
+            }
+
+            if (file.name.endsWith(".mxe")) {
+                const text = await file.text();
+                dotNetRef.invokeMethodAsync("OnFileDrop", text);
+            } else if (file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    dotNetRef.invokeMethodAsync("OnImageFileDrop", reader.result, e.clientX, e.clientY);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                dotNetRef.invokeMethodAsync("OnCanvasDragLeave");
+            }
+        });
+    },
+    registerImageDropHandler: function (element, dotnetRef) {
+        element.addEventListener("dragover", (e) => {
+            e.preventDefault();
+        });
+        
+        element.addEventListener("drop", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const file = e.dataTransfer?.files?.[0];
+            if (!file || !file.type.startsWith("image/")) return;
+            
+            const reader = new FileReader();
+            reader.onload = () => {
+                dotnetRef.invokeMethodAsync("ApplyImage", reader.result);
+            };
+            reader.readAsDataURL(file);
+        });
     }
 };
 
@@ -109,6 +167,39 @@ window.keyboardActions = {
         });
     }
 };
+
+
+window.clipBoard = {
+    copyToClipboard: async function (content) {
+        await navigator.clipboard.writeText(content);
+    },
+    registerPasteHandler: function (dotnetRef) {
+        document.addEventListener("auxclick", (e) => {
+            if (e.button === 1)
+                e.preventDefault();
+        });
+
+        document.addEventListener("paste", async (e) => {
+            
+            for (const item of e.clipboardData.items) {
+                if (item.type.startsWith("image/")) {
+                    e.preventDefault();
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        dotnetRef.invokeMethodAsync("OnPaste", reader.result);
+                    };
+                    reader.readAsDataURL(blob);
+                    return;
+                }
+            }
+            
+            const text = e.clipboardData.getData("text");
+            dotnetRef.invokeMethodAsync("OnPaste", text);
+        });
+    }
+}
+
 
 window.field = {
     getHeight: function (element) {

@@ -22,12 +22,16 @@ public class Camera
     
     public double ScreenWidth { get; set; }
     public double ScreenHeight { get; set; }
-    
 
+
+    public (double x, double y) GetScreenCenter()
+    {
+        return (ScreenWidth / 2, ScreenHeight / 2);
+    }
+    
     public void MoveToWorldPoint((double x, double y) pos, bool teleport = false)
     {
-        var cx = ScreenWidth / 2;
-        var cy = ScreenHeight / 2;
+        var (cx, cy) = GetScreenCenter();
 
         if (teleport)
         {
@@ -71,4 +75,35 @@ public class Camera
         VelY = velY;
     }
     public void ResetVelocity() => SetVelocity(0, 0);
+
+
+    public void SetProperties(Properties? properties)
+    {
+        if (properties == null)
+            return;
+        PanX = properties.PanX;
+        PanY = properties.PanY;
+        Zoom = properties.Zoom;
+    }
+    public Properties GetProperties() => 
+        new(this);
+
+
+    public class Properties
+    {
+        public double PanX { get; set; }
+        public double PanY { get; set; }
+        public double Zoom { get; set; }
+        
+        
+        public Properties() {}
+        public Properties(Camera cam) : this(cam.PanX, cam.PanY, cam.Zoom) { }
+
+        private Properties(double panX, double panY, double zoom)
+        {
+            PanX = panX;
+            PanY = panY;
+            Zoom = zoom;
+        }
+    }
 }

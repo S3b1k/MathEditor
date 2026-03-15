@@ -97,7 +97,7 @@ public partial class MathFieldView : BaseFieldView<MathField>
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Console.Error.WriteLine(e);
             return null;
         }
     }

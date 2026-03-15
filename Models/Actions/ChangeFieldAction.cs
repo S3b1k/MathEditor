@@ -12,6 +12,9 @@ public class ChangeFieldAction(Field field, string before, string after) : IUndo
             case MathField mf:
                 mf.Latex = after;
                 break;
+            case ImageField imf:
+                imf.ImageSource = after;
+                break;
         }
         field.NotifyValueUpdated();
     }
@@ -25,6 +28,9 @@ public class ChangeFieldAction(Field field, string before, string after) : IUndo
                 break;
             case MathField mf:
                 mf.Latex = before;
+                break;
+            case ImageField imf:
+                imf.ImageSource = before;
                 break;
         }
         field.NotifyValueUpdated();

@@ -144,6 +144,7 @@ code {
     --color-text-light: #fff;
     --color-text-dark: #000;
     
+    --color-gray: #7e7e7e;
     
     --icon-theme-toggle: url("icons/icon_moon.svg");
 }

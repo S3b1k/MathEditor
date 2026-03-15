@@ -123,10 +123,10 @@ public partial class Canvas : ComponentBase
                     StartPan(e);
                     break;
                 case Editor.EditorMode.CreateTextField:
-                    Editor.CreateTextField(instantiateX, instantiateY);
+                    Field.Create<TextField>(instantiateX, instantiateY);
                     break;
                 case Editor.EditorMode.CreateMathField:
-                    Editor.CreateMathField(instantiateX, instantiateY);
+                    Field.Create<MathField>(instantiateX, instantiateY);
                     break;
                 default:
                     Editor.DeselectAllFields();
@@ -189,11 +189,11 @@ public partial class Canvas : ComponentBase
                 
                 var (newX, newY, newWidth, newHeight) = field.ResizeDir switch
                 {
-                    Field.ResizeDirection.TopLeft => 
+                    Field.ResizeDirection.TopLeft =>
                         (startX + dx, startY + dy, field.ResizeStartWidth - dx, field.ResizeStartHeight - dy),
                     Field.ResizeDirection.Top => 
                         (startX, startY + dy, field.Width, field.ResizeStartHeight - dy),
-                    Field.ResizeDirection.TopRight => 
+                    Field.ResizeDirection.TopRight =>
                         (startX, startY + dy, field.ResizeStartWidth + dx, field.ResizeStartHeight - dy),
                     Field.ResizeDirection.Right => 
                         (startX, startY, field.ResizeStartWidth + dx, field.Height),
@@ -245,6 +245,9 @@ public partial class Canvas : ComponentBase
     {
         if (DialogManager.DialogOpen)
             return;
+
+        if (e.Button == 1 || e.PointerType == "touch")
+            await SaveCamPropertiesAsync();
         
         if (Editor.Mode == Editor.EditorMode.Pan)
             Editor.SetMode(_previousMode);
@@ -283,7 +286,6 @@ public partial class Canvas : ComponentBase
         {
             var field = draggedFields[0];
             var dragOffset = (field.PosX - field.StartPosX, field.PosY - field.StartPosY);
-            Console.WriteLine(field.StartPosX + ", " + field.StartPosY);
             EditorController.RegisterAction(new MoveFieldsAction(draggedFields.ToArray(), dragOffset));
         }
 
@@ -358,7 +360,6 @@ public partial class Canvas : ComponentBase
     public async Task OnAnimationFrame(double timeStamp)
     {
         const double smooth = 0.15;
-        const double speed = 12;
         
         if (_lastTimeStamp == 0)
         {
@@ -369,16 +370,34 @@ public partial class Canvas : ComponentBase
         var deltaTime = (timeStamp - _lastTimeStamp) / 1000;
         _lastTimeStamp = timeStamp;
 
-        if (Cam.IsMoving)
+        SmoothMove();
+        SmoothZoom();
+        SmoothScroll();
+        
+        await InvokeAsync(StateHasChanged);
+        return;
+
+        void SmoothMove()
         {
+            if (!Cam.IsMoving)
+                return;
+            
+            const double speed = 12;
             Cam.PanX += (Cam.TargetPanX - Cam.PanX) * speed * deltaTime;
             Cam.PanY += (Cam.TargetPanY - Cam.PanY) * speed * deltaTime;
 
             if (Math.Abs(Cam.PanX - Cam.TargetPanX) < 5 && Math.Abs(Cam.PanY - Cam.TargetPanY) < 5)
+            {
                 Cam.IsMoving = false;
+                SaveCamProperties();
+            }
         }
-        else if (Zooming)
+
+        void SmoothZoom()
         {
+            if (!Zooming) 
+                return;
+            
             var oldZoom = Zoom;
 
             Cam.Zoom = oldZoom + (TargetZoom - oldZoom) * smooth;
@@ -387,13 +406,17 @@ public partial class Canvas : ComponentBase
             {
                 Cam.Zoom = TargetZoom;
                 Cam.IsZooming = false;
+                SaveCamProperties();
             }
             
             Cam.ApplyZoomAtCursor(oldZoom, Zoom);
         }
 
-        if (Editor.Mode != Editor.EditorMode.Pan && !_isInteractingWithField)
+        void SmoothScroll()
         {
+            if (Editor.Mode == Editor.EditorMode.Pan || _isInteractingWithField)
+                return;
+            
             const double friction = 0.7f;
 
             Cam.PanX += Cam.VelX;
@@ -405,8 +428,6 @@ public partial class Canvas : ComponentBase
             if (Math.Abs(Cam.VelX) < 0.01) Cam.VelX = 0;
             if (Math.Abs(Cam.VelY) < 0.01) Cam.VelY = 0;
         }
-        
-        await InvokeAsync(StateHasChanged);
     }
 
     
@@ -417,21 +438,29 @@ public partial class Canvas : ComponentBase
             var screen = await JS.InvokeAsync<ViewportSize>("mathEditor.getViewportSize");
             Cam.ScreenWidth = screen.Width;
             Cam.ScreenHeight = screen.Height;
-            Cam.MoveToWorldPoint((0, 0), true);
             
             EnableGrid = !await LocalStorage.ContainKeyAsync("grid") || 
                           await LocalStorage.GetItemAsync<bool>("grid");
             
             EnableOuterGrid = !await LocalStorage.ContainKeyAsync("outerGrid") ||
                                await LocalStorage.GetItemAsync<bool>("outerGrid");
+
+            if (await LocalStorage.ContainKeyAsync("camProperties"))
+            {
+                Cam.SetProperties(await LocalStorage.GetItemAsync<Camera.Properties>("camProperties"));
+                Cam.TargetZoom = Cam.Zoom;
+            }
+            else
+                Cam.MoveToWorldPoint((0, 0), true);
+            
             
             var editorReference = DotNetObjectReference.Create(Editor);
             await JS.InvokeVoidAsync("mathEditor.startRenderLoop", DotNetObjectReference.Create(this));
             await JS.InvokeVoidAsync("keyboardActions.register", editorReference);
-            await JS.InvokeVoidAsync("mathEditor.registerPasteHandler", editorReference);
+            await JS.InvokeVoidAsync("clipBoard.registerPasteHandler", editorReference);
         }
     }
-
+    
 
     #region Selection Rect
     private (double x, double y, double w, double h) GetSelectionWorldRect()
@@ -466,6 +495,18 @@ public partial class Canvas : ComponentBase
         }
     }
     #endregion
+
+
+    private async void SaveCamProperties()
+    {
+        try { await SaveCamPropertiesAsync(); }
+        catch (Exception e) { Console.Error.WriteLine(e); }
+    }
+    private async Task SaveCamPropertiesAsync()
+    {
+        await LocalStorage.SetItemAsync("camProperties", Cam.GetProperties());
+    }
+    
     
     private class ViewportSize
     {

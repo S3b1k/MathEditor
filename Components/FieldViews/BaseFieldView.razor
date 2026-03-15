@@ -15,24 +15,24 @@
         <div class="selection-frame"
              @onpointerdown="StartDrag">
             
-            @if (CanResizeAll)
-            {
-                <div class="handle tl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopLeft)"></div>
-                <div class="handle tr" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopRight)"></div>
-                <div class="handle br" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomRight)"></div>
-                <div class="handle bl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomLeft)"></div>
-            }
-            
-            @if (CanResizeH)
+            @if (CanResizeHorz)
             {
                 <div class="handle l" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Left)"></div>
                 <div class="handle r" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Right)"></div>
             }
             
-            @if (CanResizeV)
+            @if (CanResizeVert)
             {
                 <div class="handle t" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Top)"></div>
                 <div class="handle b" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Bottom)"></div>
+            }
+            
+            @if (CanResizeDiag)
+            {
+                <div class="handle tl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopLeft)"></div>
+                <div class="handle tr" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopRight)"></div>
+                <div class="handle br" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomRight)"></div>
+                <div class="handle bl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomLeft)"></div>
             }
         </div>
     }
@@ -40,7 +40,7 @@
 
 @code {
 
-    bool CanResizeH => (Field.ResizeAxis & Models.Field.ResizableAxis.Horizontal) != 0;
-    bool CanResizeV => (Field.ResizeAxis & Models.Field.ResizableAxis.Vertical) != 0;
-    bool CanResizeAll => Field.ResizeAxis == Models.Field.ResizableAxis.All;
+    bool CanResizeHorz => (Field.ResizeAxis & Models.Field.ResizableAxis.Horizontal) != 0;
+    bool CanResizeVert => (Field.ResizeAxis & Models.Field.ResizableAxis.Vertical) != 0;
+    bool CanResizeDiag => (Field.ResizeAxis & Models.Field.ResizableAxis.Diagonal) != 0;
 }

@@ -1,0 +1,24 @@
+@inherits BaseFieldView<MathEditor.Models.ImageField>
+
+<BaseFieldView Field="Field"
+               OnPointerDown="PointerDown">
+    <Body>
+        @if (string.IsNullOrWhiteSpace(Field.ImageSource))
+        {
+            <div class="image-drop-zone @(_isDragOver ? "drag-over" : "")"
+                 @ondragover="_ => _isDragOver = true"
+                 @ondragleave="_ => _isDragOver = false"
+                 @ref="_dropZoneRef">
+                <span class="image-placeholder-icon">🖼</span>
+                <span class="image-placeholder-text">Drop image here</span>
+            </div>
+        }
+        else
+        {
+            <img class="image-content"
+                 src="@Field.ImageSource"
+                 alt="Image @Field.Id"/>
+        }
+
+    </Body>
+</BaseFieldView>

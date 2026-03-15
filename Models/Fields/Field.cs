@@ -1,4 +1,5 @@
 using MathEditor.Pages;
+using MathEditor.Services;
 
 namespace MathEditor.Models;
 
@@ -50,7 +51,8 @@ public abstract class Field(double x, double y)
         None = 0,
         Horizontal = 1,
         Vertical = 2,
-        All = Horizontal | Vertical
+        Diagonal = 4,
+        All = Horizontal | Vertical | Diagonal
     }
     
     
@@ -76,5 +78,12 @@ public abstract class Field(double x, double y)
     public void NotifyValueUpdated() => OnValueUpdated?.Invoke();
 
     public abstract FieldSaveData ToSaveData();
-    public abstract Field Copy();
+
+
+    public static T Create<T>(double posX, double posY, bool suppressModeSwitch = false) where T : Field
+    {
+        var field = (T)Activator.CreateInstance(typeof(T), posX, posY)!;
+        Editor.CreateNewField(field, suppressModeSwitch: suppressModeSwitch);
+        return field;
+    }
 }

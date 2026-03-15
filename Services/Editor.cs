@@ -1,10 +1,8 @@
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using MathEditor.Components.DialogViews;
 using MathEditor.Models;
 using MathEditor.Models.Actions;
-using MathEditor.Pages;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -71,26 +69,26 @@ public class Editor
 
     #region Field Factory
 
-    public static void CreateNewField(Field field) =>
-        EditorController.ExecuteAction(new CreateFieldsAction(field));
-    public static void CreateNewFields(Field[] fields) =>
-        EditorController.ExecuteAction(new CreateFieldsAction(fields));
+    public static void CreateNewField(Field field, bool deselectFields = false, bool suppressModeSwitch = true)
+    {
+        if (deselectFields) 
+            DeselectAllFields();
+        EditorController.ExecuteAction(new CreateFieldsAction(field, suppressModeSwitch));
+    }
+
+    public static void CreateNewFields(Field[] fields, bool suppressModeSwitch = true) =>
+        EditorController.ExecuteAction(new CreateFieldsAction(fields, suppressModeSwitch));
     
     public static void RegisterField(Field field, bool selectField = true, bool suppressModeSwitch = false)
     {
         Fields.Add(field);
         
-        if (selectField)
+        if (selectField) 
             SelectField(field);
         
         if (!suppressModeSwitch)
             SetMode(EditorMode.Idle);
     }
-    
-    public static void CreateTextField(double posX, double posY) 
-        => CreateNewField(new TextField(posX, posY));
-    public static void CreateMathField(double posX, double posY) 
-        => CreateNewField(new MathField(posX, posY));
 
     #endregion
  
@@ -258,7 +256,10 @@ public class Editor
     private static List<FieldSaveData> GetSaveList() => 
         Fields.Select(f => f.ToSaveData()).ToList();
 
-    private static void ReadSaveList(List<FieldSaveData> saveList)
+    private static void ReadSaveList(List<FieldSaveData> saveList) =>
+        ReadSaveList(saveList, f => RegisterField(f, selectField: false));
+
+    private static void ReadSaveList(List<FieldSaveData> saveList, Action<Field> callback)
     {
         foreach (var f in saveList)
         {
@@ -270,13 +271,14 @@ public class Editor
             {
                 "text" => new TextField(pos.x, pos.y) { Text = f.Content },
                 "math" => new MathField(pos.x, pos.y) { Latex = f.Content },
+                "image" => new ImageField(pos.x, pos.y) { ImageSource = f.Content },
                 _ => throw new Exception($"Unknown field type: {f.Type}")
             };
 
             field.Width = f.Width;
             field.Height = f.Height;
 
-            RegisterField(field, selectField: false);
+            callback.Invoke(field);
         }
     }
     
@@ -373,6 +375,12 @@ public class Editor
             return;
         }
 
+        if (key == "i")
+        {
+            var center = _cam!.GetScreenCenter();
+            Field.Create<ImageField>(center.x, center.y);
+        }
+        
         if (ctrl)
         {
             switch (key)
@@ -437,7 +445,7 @@ public class Editor
                     {
                         var fields = SelectedFields.Select(f => f.ToSaveData()).ToList();
                         var copied = JsonSerializer.Serialize(fields, _serializerOptions);
-                        await _js!.InvokeVoidAsync("mathEditor.copyToClipboard", copied);
+                        await _js!.InvokeVoidAsync("clipBoard.copyToClipboard", copied);
                     }
                     break;
             }
@@ -447,40 +455,41 @@ public class Editor
     [JSInvokable]
     public void OnPaste(string content)
     {
+        var center = _cam!.GetScreenCenter();
+        
+        if (content.StartsWith("data:image/"))
+        {
+            var selectedImage = SelectedFields.OfType<ImageField>().FirstOrDefault();
+            if (selectedImage != null)
+            {
+                EditorController.ExecuteAction(
+                    new ChangeFieldAction(selectedImage, selectedImage.ImageSource, content));
+                return;
+            }
+
+            var field = Field.Create<ImageField>(center.x, center.y);
+            field.ImageSource = content;
+            return;
+        }
+        
         DeselectAllFields();
+        
         try
         {
             var data = JsonSerializer.Deserialize<List<FieldSaveData>>(content);
-            List<Field> fields = new();
+            List<Field> fields = [];
             if (data != null)
-            {
-                foreach (var f in data)
-                {
-                    if (string.IsNullOrWhiteSpace(f.Content))
-                        continue;
+                ReadSaveList(data, f => fields.Add(f));
 
-                    (double x, double y) pos = (f.PosX + Canvas.BaseCellSize * 3, f.PosY + Canvas.BaseCellSize * 3);
-
-                    Field field = f.Type switch
-                    {
-                        "text" => new TextField(pos.x, pos.y) { Text = f.Content },
-                        "math" => new MathField(pos.x, pos.y) { Latex = f.Content },
-                        _ => throw new Exception($"Unknown field type: {f.Type}")
-                    };
-
-                    field.Width = f.Width;
-                    field.Height = f.Height;
-
-                    fields.Add(field);
-                }
-            }
-            
             CreateNewFields(fields.ToArray());
         }
         catch (Exception)
         {
-            CreateNewField(new TextField(0, 0) { Text = content });
-            MoveCam(0, 0);
+            CreateNewField(new TextField(center.x, center.y) { Text = content });
+        }
+        finally
+        {
+            SaveCachedFile();
         }
     }
 

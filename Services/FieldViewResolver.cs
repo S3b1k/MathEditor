@@ -20,7 +20,13 @@ public static class FieldViewResolver
             builder.AddAttribute(1, "Field", mf);
             builder.CloseComponent();
         },
-
+        ImageField imf => builder =>
+        {
+            builder.OpenComponent(0, typeof(ImageFieldView));
+            builder.AddAttribute(1, "Field", imf);
+            builder.CloseComponent();
+        },
+        
         _ => builder => { }
     };
 }
