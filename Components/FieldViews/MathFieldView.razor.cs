@@ -1,6 +1,5 @@
 using MathEditor.Models;
 using MathEditor.Models.Actions;
-using MathEditor.Pages;
 using MathEditor.Services;
 using Microsoft.JSInterop;
 
@@ -38,15 +37,19 @@ public partial class MathFieldView : BaseFieldView<MathField>
         }
         catch (Exception e) { Console.Error.WriteLine(e); }
     }
+    
+    
     private async Task UpdateFieldView()
     {
         try
         {
-            var width = await JS.InvokeAsync<double>("mathField.getWidth", ContentRef);
-            width = Canvas.SnapCeil(width);
-            width += Canvas.BaseCellSize * 4;
+            // var width = await JS.InvokeAsync<double>("mathField.getWidth", ContentRef);
+            // width = Canvas.SnapCeil(width);
+            // width += Canvas.BaseCellSize * 4;
         
             // Field.Width = Math.Max(Field.Width, width);
+            
+            
         }
         catch (Exception e) { Console.Error.WriteLine(e); }
     }
@@ -81,29 +84,6 @@ public partial class MathFieldView : BaseFieldView<MathField>
         }
         catch (Exception e) { Console.Error.WriteLine(e); }
     }
-    #endregion
-
-
-    #region ComputeEngine
-
-    public async Task<double?> EvaluateNumericAsync()
-    {
-        try
-        {
-            var latex = Field.Latex;
-            latex = latex.Replace("=", "");
-            
-            var result = await JS.InvokeAsync<double?>("mathComputeEngine.evaluateNumeric", latex);
-
-            return result;
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-            return null;
-        }
-    }
-
     #endregion
     
     

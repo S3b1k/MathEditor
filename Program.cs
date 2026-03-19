@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MathEditor;
+using MathEditor.Models;
 using MathEditor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

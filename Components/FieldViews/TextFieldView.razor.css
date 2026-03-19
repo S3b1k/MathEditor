@@ -7,6 +7,7 @@
     /*Block pointer events if unselected*/
     pointer-events: none;
     user-select: none;
+    -webkit-user-select: none;
     
     /*Formatting*/
     color: var(--color-text);

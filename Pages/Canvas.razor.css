@@ -7,10 +7,10 @@
 }
 
 
-.grid.pan {
+.pan {
     cursor: grab;
 }
-.grid.panning {
+.panning {
     cursor: grabbing;
 }
 
@@ -47,7 +47,7 @@
     -webkit-backdrop-filter: blur(1px);
     
     pointer-events: none;
-    animation: overlay-fade-in 0.15s ease;
+    animation: overlay-fade-in 0.3s ease;
 }
 
 .drop-overlay-content {

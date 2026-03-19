@@ -1,33 +1,21 @@
-.field.editing .math-content::part(content) {
-    pointer-events: auto;
+.field {
+    display: flex;
 }
-
 
 .math-content {
     width: 100%;
-    background:transparent;
+    height: 100%;
+    background: transparent;
     border: none;
     outline: none;
-    
+        
     color: var(--color-text);
     
     --contains-highlight-background-color: var(--color-gray);
 }
-.math-content::part(content) {
-    pointer-events: none;
-}
 
-.math-content::part(keyboard-sink) {
-    
-}
+.math-content::part(content) { pointer-events: none; }
 
+.math-content::part(container) { height: 100%; }
 
-.math-content::part(container) {
-    height: calc(var(--cell-size) * 3);
-}
-
-
-
-.math-content::part(virtual-keyboard-toggle), .math-content::part(menu-toggle) {
-    display: none;
-}
+.math-content::part(virtual-keyboard-toggle), .math-content::part(menu-toggle) { display: none; }

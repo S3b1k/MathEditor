@@ -8,7 +8,7 @@
 @inject Editor Editor;
 @inject Camera Cam;
 
-<div class="canvas-container" tabindex="0"
+<div class="canvas-container @(Editor.Mode == Editor.EditorMode.Pan ? _panning ? "panning" : "pan" : "")" tabindex="0"
      @onpointerdown="OnPointerDown"
      @onpointermove="OnPointerMove"
      @onpointerup="OnPointerUp"
@@ -21,7 +21,7 @@
     @* Grid *@
     @if (EnableGrid)
     {
-        <svg class="grid @(Editor.Mode == Editor.EditorMode.Pan ? _panning ? "panning" : "pan" : "")" 
+        <svg class="grid" 
              width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <pattern id="smallGrid"

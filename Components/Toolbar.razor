@@ -45,8 +45,8 @@
                 Save File
                 <span class="shortcut">Ctrl + S</span>
         </button>
-        <button @onclick="_ => Editor.ToggleTheme()">
-                <img class="theme-toggle-icon" alt="toggle-theme"/>
+        <button @onclick="_ => ToggleTheme()">
+                <img class="theme-toggle-icon @(rotateIcon ? "rotate" : "")" alt="toggle-theme"/>
                 Toggle Theme
         </button>
         <button @onclick="ShowClearCanvasDialog">
@@ -69,8 +69,22 @@
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
 
+        private bool rotateIcon;
+        
+        private async Task ToggleTheme()
+        {
+                if (rotateIcon)
+                        return;
+                
+                rotateIcon = true;
+                await Editor.ToggleTheme();
 
-        private static void ShowClearCanvasDialog()
+                await Task.Delay(700);
+                
+                rotateIcon = false;
+        }
+
+        private void ShowClearCanvasDialog()
         {
                 var parameters = new DialogParams
                 {
