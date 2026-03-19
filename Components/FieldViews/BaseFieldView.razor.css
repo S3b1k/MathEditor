@@ -1,31 +1,52 @@
 .field {
     position: absolute;
     display: inline-block;
-    border-radius: 3px;
+    border-radius: 1px;
     width: 100%;
     height: 100%;
     
     --overflow: visible;
     overflow: var(--overflow);
-}
-.field:hover {
-    outline: 2px dotted var(--color-selection);
-    cursor: pointer;
-}
-.field.selected {
-    outline: 3px solid var(--color-selection);
-    outline-offset: 2px;
-    cursor: default;
+    
+    background: transparent;
+
+    transition: box-shadow 50ms ease-out, background-color 50ms;
 }
 
+.field.selected {
+    background: var(--color-bg-70a);
+    z-index: 100;
+}
+
+.field.editing {
+    box-shadow: 0 0 0 1px var(--color-gray);
+}
+
+.block-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+}
 
 .selection-frame {
     position: absolute;
-    inset: -10px;
-    border: 1px solid var(--color-selection);
+    inset: -2px;
     border-radius: 3px;
-    cursor: move;
     user-select: none;
+    cursor: pointer;
+    
+    z-index: 200;
+    
+    transition: box-shadow 50ms ease-out;
+}
+.selection-frame:hover {
+    box-shadow: 0 0 0 2px var(--color-selection);
+}
+
+.selection-frame.visible {
+    box-shadow: 0 0 0 3px var(--color-selection);
+    cursor: move;
 }
 
 
@@ -36,6 +57,7 @@
     background: white;
     border: 1px solid var(--color-selection);
     border-radius: 3px;
+    z-index: 101;
 }
 
 .handle.tl { top: -5px; left: -5px; cursor: nwse-resize; }

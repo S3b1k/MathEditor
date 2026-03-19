@@ -10,16 +10,18 @@ public partial class TextFieldView : BaseFieldView<TextField>
 {
     protected override void OnInitialized()
     {
-        Field.OnFieldDeselected += OnDeselect;
+        Field.OnFieldDeselected += StopEditing;
         Field.OnValueUpdated += OnTextUpdated;
         Field.OnFieldDeleted += OnDelete;
+        Field.OnStopEditing += StopEditing;
     }
 
     private void OnDelete()
     {
-        Field.OnFieldDeselected -= OnDeselect;
+        Field.OnFieldDeselected -= StopEditing;
         Field.OnValueUpdated -= OnTextUpdated;
         Field.OnFieldDeleted -= OnDelete;
+        Field.OnStopEditing -= StopEditing;
     }
 
 
@@ -38,7 +40,7 @@ public partial class TextFieldView : BaseFieldView<TextField>
         catch (Exception e) { Console.Error.WriteLine(e); }
     }
     
-    private async void OnDeselect()
+    private async void StopEditing()
     {
         try
         {

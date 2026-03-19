@@ -54,7 +54,7 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     #region overridables
     protected virtual void PointerDown(PointerEventArgs e)
     {
-        Editor.SelectField(Field, e.ShiftKey);
+        Editor.SelectField(Field, e.ShiftKey, true);
         StartDrag(e);
     }
     

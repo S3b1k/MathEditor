@@ -10,16 +10,18 @@ public partial class MathFieldView : BaseFieldView<MathField>
 {
     protected override void OnInitialized()
     {
-        Field.OnFieldDeselected += OnDeselect;
+        Field.OnFieldDeselected += StopEditing;
         Field.OnValueUpdated += OnLatexUpdated;
         Field.OnFieldDeleted += OnDelete;
+        Field.OnStopEditing += StopEditing;
     }
 
     private void OnDelete()
     {
-        Field.OnFieldDeselected -= OnDeselect;
+        Field.OnFieldDeselected -= StopEditing;
         Field.OnValueUpdated -= OnLatexUpdated;
         Field.OnFieldDeleted -= OnDelete;
+        Field.OnStopEditing -= StopEditing;
     }
     
 
@@ -44,13 +46,13 @@ public partial class MathFieldView : BaseFieldView<MathField>
             width = Canvas.SnapCeil(width);
             width += Canvas.BaseCellSize * 4;
         
-            Field.Width = Math.Max(Field.Width, width);
+            // Field.Width = Math.Max(Field.Width, width);
         }
         catch (Exception e) { Console.Error.WriteLine(e); }
     }
     
     
-    private async void OnDeselect()
+    private async void StopEditing()
     {
         try
         {

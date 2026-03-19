@@ -10,30 +10,34 @@
         @Body
     </div>
 
-    @if (Field is { IsSelected: true, IsEditing: false })
+    @if (!Field.IsEditing)
     {
-        <div class="selection-frame"
+        <div class="selection-frame @(Field.IsSelected ? "visible" : "")"
              @onpointerdown="StartDrag">
             
-            @if (CanResizeHorz)
+            @if (Field.IsSelected)
             {
-                <div class="handle l" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Left)"></div>
-                <div class="handle r" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Right)"></div>
-            }
+                @if (CanResizeHorz)
+                {
+                    <div class="handle l" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Left)"></div>
+                    <div class="handle r" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Right)"></div>
+                }
             
-            @if (CanResizeVert)
-            {
-                <div class="handle t" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Top)"></div>
-                <div class="handle b" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Bottom)"></div>
-            }
+                @if (CanResizeVert)
+                {
+                    <div class="handle t" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Top)"></div>
+                    <div class="handle b" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.Bottom)"></div>
+                }
             
-            @if (CanResizeDiag)
-            {
-                <div class="handle tl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopLeft)"></div>
-                <div class="handle tr" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopRight)"></div>
-                <div class="handle br" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomRight)"></div>
-                <div class="handle bl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomLeft)"></div>
+                @if (CanResizeDiag)
+                {
+                    <div class="handle tl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopLeft)"></div>
+                    <div class="handle tr" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.TopRight)"></div>
+                    <div class="handle br" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomRight)"></div>
+                    <div class="handle bl" @onpointerdown="e => StartResize(e, Models.Field.ResizeDirection.BottomLeft)"></div>
+                }
             }
+
         </div>
     }
 </div>

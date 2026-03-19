@@ -296,7 +296,7 @@ public partial class Canvas : ComponentBase
         {
             EditorController.RegisterAction(new ScaleFieldAction(
                 resizingField,
-                ( resizingField.Width - resizingField.StartWidth, resizingField.Height - resizingField.StartHeight), 
+                (resizingField.Width - resizingField.StartWidth, resizingField.Height - resizingField.StartHeight), 
                 (resizingField.ResizeStartPosX, resizingField.ResizeStartPosY),
                 (resizingField.PosX, resizingField.PosY)));
         }

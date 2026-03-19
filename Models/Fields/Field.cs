@@ -5,7 +5,6 @@ namespace MathEditor.Models;
 
 public abstract class Field(double x, double y)
 {
-
     public Guid Id { get; protected init; } = Guid.NewGuid();
     
     #region Transform
@@ -22,6 +21,7 @@ public abstract class Field(double x, double y)
     public event Action? OnFieldDeleted;
 
     public bool IsEditing { get; set; }
+    public event Action? OnStopEditing;
     
     #region Dragging
     public bool IsDragging { get; set; }
@@ -76,6 +76,7 @@ public abstract class Field(double x, double y)
     public void NotifyFieldDeselected() => OnFieldDeselected?.Invoke();
     public void NotifyFieldDeleted() => OnFieldDeleted?.Invoke();
     public void NotifyValueUpdated() => OnValueUpdated?.Invoke();
+    public void StopEditing() => OnStopEditing?.Invoke();
 
     public abstract FieldSaveData ToSaveData();
 

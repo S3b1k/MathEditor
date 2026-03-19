@@ -95,12 +95,18 @@ public class Editor
     
     #region Field Handling
     
-    public static void SelectField(Field field) => SelectField(field, true);
-    public static void SelectField(Field field, bool shift)
+    public static void SelectField(Field field) => SelectField(field, true, false);
+    public static void SelectField(Field field, bool shift, bool clicked)
     {
-        NotifyFieldClicked();
-        
-        if (field.IsSelected) return;
+        if (clicked)
+            NotifyFieldClicked();
+
+        if (field.IsSelected)
+        {
+            if (shift && clicked)
+                DeselectField(field);
+            return;
+        }
 
         if (!shift && !field.IsSelected)
             DeselectAllFields();
@@ -108,12 +114,21 @@ public class Editor
         field.IsSelected = true;
         SelectedFields.Add(field);
     }
-
+    public static void SelectAllFields()
+    {
+        if (Fields.Any(f => f.IsEditing))
+            return;
+        
+        Fields.ForEach(SelectField);
+    }
+    
     public static void DeselectField(Field field)
     {
         if (!field.IsSelected) return;
         
         field.IsSelected = false;
+        field.IsDragging = false;
+        field.IsResizing = false;
         SelectedFields.Remove(field);
 
         if (field.IsEditing)
@@ -133,6 +148,8 @@ public class Editor
             }
             
             field.IsSelected = false;
+            field.IsDragging = false;
+            field.IsResizing = false;
             field.NotifyFieldDeselected();            
         } 
         
@@ -380,8 +397,10 @@ public class Editor
             switch (key)
             {
                 case "a":
-                    foreach (var field in Fields)
-                        SelectField(field);
+                    if (shift)
+                        DeselectAllFields();
+                    else
+                        SelectAllFields();
                     return;
                 case "z":
                     EditorController.Undo();
@@ -428,7 +447,10 @@ public class Editor
             switch (key)
             {
                 case "escape":
-                    DeselectAllFields();
+                    if (SelectedFields.Any(f => f.IsEditing))
+                        SelectedFields.First(f => f.IsEditing).StopEditing();
+                    else
+                        DeselectAllFields();
                     break;
                 case "delete":
                     DeleteSelectedFields();

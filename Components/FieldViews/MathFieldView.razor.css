@@ -1,3 +1,8 @@
+.field.editing .math-content::part(content) {
+    pointer-events: auto;
+}
+
+
 .math-content {
     width: 100%;
     background:transparent;
@@ -5,30 +10,24 @@
     outline: none;
     
     color: var(--color-text);
+    
+    --contains-highlight-background-color: var(--color-gray);
 }
-.field.selected > .math-content{
-    cursor: default;
+.math-content::part(content) {
+    pointer-events: none;
+}
+
+.math-content::part(keyboard-sink) {
+    
 }
 
 
 .math-content::part(container) {
-    height: 37.8px;
+    height: calc(var(--cell-size) * 3);
 }
 
-.math-content::part(virtual-keyboard-toggle) {
-    visibility: hidden;
-    margin-right: 0;
-    margin-top: -2px;
-}
-.field.selected > .math-content::part(virtual-keyboard-toggle) {
-    visibility: visible;
-}
 
-.math-content::part(menu-toggle) {
-    visibility: hidden;
-    margin-right: 0;
-    margin-top: -2px;
-}
-.field.selected > .math-content::part(menu-toggle) {
-    visibility: visible;
+
+.math-content::part(virtual-keyboard-toggle), .math-content::part(menu-toggle) {
+    display: none;
 }
