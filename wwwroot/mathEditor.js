@@ -159,7 +159,7 @@ window.keyboardActions = {
             const shift = e.shiftKey;
             const alt = e.altKey;
 
-            const reservedKeys = new Set(["c", "z", "y", "s", "o"])
+            const reservedKeys = new Set(["c", "z", "y", "s", "o", "a"])
             if (ctrl && reservedKeys.has(key))
                 e.preventDefault();
             
