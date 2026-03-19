@@ -37,15 +37,15 @@
                 @if (EnableOuterGrid)
                 {
                     <pattern id="bigGrid"
-                             width="@F(BaseCellSize * 5)"
-                             height="@F(BaseCellSize * 5)"
+                             width="@F(BaseCellSize * 4)"
+                             height="@F(BaseCellSize * 4)"
                              patternUnits="userSpaceOnUse"
                              patternTransform="translate(@F(Cam.PanX) @F(Cam.PanY)) scale(@F(Cam.Zoom))">
                 
-                        <rect width="@F(BaseCellSize * 5)" height="@F(BaseCellSize * 5)" fill="transparent" />
+                        <rect width="@F(BaseCellSize * 4)" height="@F(BaseCellSize * 4)" fill="transparent" />
 
-                        <path d="M 0 0 L @F(BaseCellSize * 5) 0" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
-                        <path d="M 0 0 L 0 @F(BaseCellSize * 5)" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                        <path d="M 0 0 L @F(BaseCellSize * 4) 0" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                        <path d="M 0 0 L 0 @F(BaseCellSize * 4)" fill="none" stroke="var(--color-grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>
                     </pattern>
                 }
             </defs>

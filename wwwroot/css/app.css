@@ -140,7 +140,8 @@ code {
     --color-bg-70a: rgba(255, 255, 255, 0.7);
     --color-bg-2: #d0d0d0;
     --color-grid-bg: #fff;
-    --color-grid: rgba(0, 0, 0, 0.2);
+    /*--color-grid: rgba(0, 0, 0, 0.2);*/
+    --color-grid: rgba(132, 175, 255, 0.7);
     
     --color-selection: #4a90e2;
     --color-selection-bg: rgba(74, 144, 226, 0.2);
@@ -165,6 +166,7 @@ code {
     --color-bg-2: #3a3a43;
     --color-grid-bg: #161616;
     --color-grid: rgba(255, 255, 255, 0.2);
+    /*--color-grid: rgba(136, 233, 255, 0.2);*/
 
     --color-selection: #396fae;
     --color-selection-bg: rgba(64, 127, 200, 0.2);
