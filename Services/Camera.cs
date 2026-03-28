@@ -26,7 +26,7 @@ public class Camera
 
     public (double x, double y) GetScreenCenter()
     {
-        return (ScreenWidth / 2, ScreenHeight / 2);
+        return ScreenToWorld(ScreenWidth / 2, ScreenHeight / 2);
     }
     
     public void MoveToWorldPoint((double x, double y) pos, bool teleport = false)

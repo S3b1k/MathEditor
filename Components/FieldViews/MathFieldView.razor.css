@@ -2,6 +2,10 @@
     display: flex;
 }
 
+.field.editing .math-content {
+    cursor: text;
+}
+
 .math-content {
     width: 100%;
     height: 100%;

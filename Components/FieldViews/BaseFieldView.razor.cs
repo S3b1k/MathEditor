@@ -1,5 +1,6 @@
 using System.Globalization;
 using MathEditor.Models;
+using MathEditor.Models.Actions;
 using MathEditor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -22,6 +23,7 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     [Parameter] public EventCallback<PointerEventArgs> OnPointerDown { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
     [Parameter] public EventCallback OnStartEditing { get; set; }
+    [Parameter] public EventCallback OnStopEditing { get; set; }
     
     private string Style =>
         $"position:absolute;" +
@@ -59,11 +61,27 @@ public partial class BaseFieldView<TField> : ComponentBase where TField : Field
     }
     
 
-    protected virtual void StartEditing()
+    protected virtual async void StartEditing()
     {
         Field.IsEditing = true;
     }
+    
 
+    protected virtual void StopEditing() { Console.Error.WriteLine("Error: StopEditing method not implemented"); }
+    protected void StopEditing(string fieldValue)
+    {
+        if (string.IsNullOrWhiteSpace(fieldValue))
+        {
+            Editor.DeleteField(Field);
+            return;
+        }
+            
+        if (Field.IsEditing)
+            EditorController.ExecuteAction(new ChangeFieldAction(Field, Field.Value!, fieldValue));
+        
+        Field.IsEditing = false;
+    }
+    
     #endregion
     
     

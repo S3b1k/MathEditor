@@ -30,12 +30,8 @@ window.mathEditor = {
         this.unfocusElement();
         element.focus();
         
-        const range = document.createRange();
-        range.selectNodeContents(element);
-
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+        field.clearSelection();
+        field.selectAll(element);
     },
     unfocusElement: function () {
         document.activeElement.blur();
@@ -153,14 +149,14 @@ window.mathEditor = {
 
 window.keyboardActions = {
     register: function (dotnetRef) {
-        document.addEventListener("keydown", function (e) {
+        document.addEventListener("keydown", (e) => {
             const key = e.key.toLowerCase();
             const ctrl = e.ctrlKey || e.metaKey;
             const shift = e.shiftKey;
             const alt = e.altKey;
 
-            const reservedKeys = new Set(["c", "z", "y", "s", "o", "a"])
-            if (ctrl && reservedKeys.has(key))
+            const reservedKeys = new Set(["s", "o"])
+            if ((ctrl && reservedKeys.has(key)) || alt)
                 e.preventDefault();
             
             dotnetRef.invokeMethodAsync("OnKeypress", key, ctrl, shift, alt);
@@ -174,6 +170,7 @@ window.clipBoard = {
         await navigator.clipboard.writeText(content);
     },
     registerPasteHandler: function (dotnetRef) {
+        // Prevent linux middle-click paste
         document.addEventListener("auxclick", (e) => {
             if (e.button === 1)
                 e.preventDefault();
@@ -208,6 +205,19 @@ window.field = {
     getWidth: function (element) {
         return element.scrollWidth;
     },
+    selectAll: function (element) {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    },
+    clearSelection: function () {
+        const selection = window.getSelection();
+        if (selection)
+            selection.removeAllRanges();
+    },
     hideOverflow: function (element, value) {
         element.style.setProperty("--overflow", value ? "hidden" : "visible");
     }
@@ -221,11 +231,6 @@ window.textField = {
     setText: function (element, text) {
         element.innerText = text;
     },
-    clearSelection: function () {
-        const selection = window.getSelection();
-        if (selection)
-            selection.removeAllRanges();
-    },
     toggleSpellCheck: function (element, value) {
         element.spellcheck = value;
     }
@@ -233,11 +238,13 @@ window.textField = {
 
 
 window.mathField = {
-    init: function (mf, dotnetRef, latex) {
-        if (latex) mf.value = latex;
-
-        mf.addEventListener("input", () => {
-            dotnetRef.invokeMethodAsync("OnMathChanged", mf.value);
+    registerHandler: function (element, dotnetRef) {
+        element.addEventListener("keydown", (e) => {
+            switch (e.key) {
+                case ':':
+                    e.preventDefault();
+                    element.executeCommand(["insert", "\\coloneq"])
+            }
         });
     },
     setValue: function (element, latex) {

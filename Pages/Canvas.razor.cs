@@ -60,6 +60,7 @@ public partial class Canvas : ComponentBase
     private bool _isFadingSelection;
     private double _selectStartX, _selectStartY;
     private double _selectCurrentX, _selectCurrentY;
+    private bool _clonedFields;
     
     // Editor
     private Editor.EditorMode _previousMode = Editor.EditorMode.Idle;
@@ -180,7 +181,7 @@ public partial class Canvas : ComponentBase
             StateHasChanged();
         }
 
-        foreach (var field in Editor.SelectedFields)
+        foreach (var field in SelectedFields)
         {
             if (field.IsResizing)
             {
@@ -242,6 +243,20 @@ public partial class Canvas : ComponentBase
                 field.PosY = worldY;
             }
         }
+        
+        if (e.AltKey && !_clonedFields)
+        {
+            var clones = SelectedFields.Select(field =>
+                {
+                    var clone = field.Clone();
+                    clone.PosX = field.StartPosX;
+                    clone.PosY = field.StartPosY;
+                    return clone;
+                }).ToArray();
+
+            Editor.CreateNewFields(clones, selectFields: false);
+            _clonedFields = true;
+        }
     }
 
     private async Task OnPointerUp(PointerEventArgs e)
@@ -283,6 +298,7 @@ public partial class Canvas : ComponentBase
             
             field.IsDragging = false;
             field.IsResizing = false;
+            _clonedFields = false;
         }
 
         if (draggedFields.Count > 0)

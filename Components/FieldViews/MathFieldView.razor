@@ -2,8 +2,12 @@
 
 <BaseFieldView Field="Field"
                OnPointerDown="PointerDown"
-               OnStartEditing="StartEditing">
+               OnStartEditing="StartEditing"
+               OnStopEditing="StopEditing">
     <Body>
-        <math-field class="math-content" @ref="ContentRef"></math-field>
+        <math-field class="math-content"
+                    @oninput="OnInput"
+                    @ref="ContentRef">
+        </math-field>
     </Body>
 </BaseFieldView>

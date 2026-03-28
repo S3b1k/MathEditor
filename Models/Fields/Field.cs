@@ -7,6 +7,8 @@ public abstract class Field(double x, double y)
 {
     public Guid Id { get; protected init; } = Guid.NewGuid();
     
+    public abstract string? Value { get; }
+    
     #region Transform
     public double PosX { get; set; } = x;
     public double PosY { get; set; } = y;
@@ -21,6 +23,7 @@ public abstract class Field(double x, double y)
     public event Action? OnFieldDeleted;
 
     public bool IsEditing { get; set; }
+    public event Action<string, bool[]>? OnKeyPress;
     public event Action? OnStopEditing;
     
     #region Dragging
@@ -76,8 +79,11 @@ public abstract class Field(double x, double y)
     public void NotifyFieldDeselected() => OnFieldDeselected?.Invoke();
     public void NotifyFieldDeleted() => OnFieldDeleted?.Invoke();
     public void NotifyValueUpdated() => OnValueUpdated?.Invoke();
+    public void NotifyKeyPressed(string key, bool[] mod) => OnKeyPress?.Invoke(key, mod);
     public void StopEditing() => OnStopEditing?.Invoke();
-
+    
+    
+    public abstract Field Clone();
     public abstract FieldSaveData ToSaveData();
 
 

@@ -76,8 +76,8 @@ public class Editor
         EditorController.ExecuteAction(new CreateFieldsAction(field, suppressModeSwitch));
     }
 
-    public static void CreateNewFields(Field[] fields, bool suppressModeSwitch = true) =>
-        EditorController.ExecuteAction(new CreateFieldsAction(fields, suppressModeSwitch));
+    public static void CreateNewFields(Field[] fields, bool suppressModeSwitch = true, bool selectFields = true) =>
+        EditorController.ExecuteAction(new CreateFieldsAction(fields, suppressModeSwitch, selectFields));
     
     public static void RegisterField(Field field, bool selectField = true, bool suppressModeSwitch = false)
     {
@@ -114,13 +114,8 @@ public class Editor
         field.IsSelected = true;
         SelectedFields.Add(field);
     }
-    public static void SelectAllFields()
-    {
-        if (Fields.Any(f => f.IsEditing))
-            return;
-        
+    public static void SelectAllFields() =>
         Fields.ForEach(SelectField);
-    }
     
     public static void DeselectField(Field field)
     {
@@ -385,6 +380,10 @@ public class Editor
     [JSInvokable]
     public async void OnKeypress(string key, bool ctrl, bool shift, bool alt)
     {
+        bool editingField = SelectedFields.Any(f => f.IsEditing); 
+        if (editingField)
+            SelectedFields.First(f => f.IsEditing).NotifyKeyPressed(key, [ctrl, shift, alt]);
+        
         if (DialogManager.DialogOpen)
         {
             if (key == "escape")
@@ -392,7 +391,7 @@ public class Editor
             return;
         }
         
-        if (ctrl)
+        if (ctrl && !editingField)
         {
             switch (key)
             {
@@ -457,7 +456,7 @@ public class Editor
                     SaveCachedFile();
                     break;
                 case "c":
-                    if (ctrl)
+                    if (ctrl && !editingField)
                     {
                         var fields = SelectedFields.Select(f => f.ToSaveData()).ToList();
                         var copied = JsonSerializer.Serialize(fields, _serializerOptions);
@@ -471,6 +470,9 @@ public class Editor
     [JSInvokable]
     public void OnPaste(string content)
     {
+        if (SelectedFields.Any(f => f.IsEditing))
+            return;
+        
         var center = _cam!.GetScreenCenter();
         
         if (content.StartsWith("data:image/"))
@@ -485,6 +487,8 @@ public class Editor
 
             var field = Field.Create<ImageField>(center.x, center.y);
             field.ImageSource = content;
+            field.PosX = center.x - field.Width / 2;
+            field.PosY = center.y - field.Height / 2;
             return;
         }
         
@@ -501,7 +505,9 @@ public class Editor
         }
         catch (Exception)
         {
-            CreateNewField(new TextField(center.x, center.y) { Text = content });
+            var field = Field.Create<TextField>(0, 0);
+            field.PosX = center.x - field.Width / 2;
+            field.PosY = center.y - field.Height / 2;
         }
         finally
         {
