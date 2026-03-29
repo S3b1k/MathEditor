@@ -7,6 +7,7 @@ public class MathField : Field
     public string Latex { get; set; } = "";
     public override string Value => Latex;
     
+    public readonly Dictionary<string, string> Variables = new();
 
     
     public MathField(double x, double y) : base(x, y)

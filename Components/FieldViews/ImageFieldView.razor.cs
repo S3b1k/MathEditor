@@ -23,7 +23,7 @@ public partial class ImageFieldView : BaseFieldView<ImageField>
     {
         _isDragOver = false;
         EditorController.ExecuteAction(new ChangeFieldAction(Field, Field.ImageSource, dataUrl));
-        Editor.SaveCachedFile();
+        Editor.SaveCanvas();
         StateHasChanged();
     }
 }

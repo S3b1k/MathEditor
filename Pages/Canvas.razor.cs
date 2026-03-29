@@ -318,7 +318,7 @@ public partial class Canvas : ComponentBase
         }
 
         if (_isInteractingWithField)
-            Editor.SaveCachedFile();
+            Editor.SaveCanvas();
 
         _isInteractingWithField = false;
     }
@@ -391,9 +391,9 @@ public partial class Canvas : ComponentBase
     private string json;
     public async Task LoadFile()
     {
-        await Editor.ClearGrid();
+        await Editor.ClearCanvas();
         Editor.DeserializeFields(json);
-        Editor.SaveCachedFile();
+        Editor.SaveCanvas();
     }
     
     [JSInvokable]
@@ -418,7 +418,7 @@ public partial class Canvas : ComponentBase
         var worldPos = Cam.ScreenToWorld(clientX, clientY);
         var field = Field.Create<ImageField>(worldPos.worldX, worldPos.worldY);
         field.ImageSource = dataUrl;
-        Editor.SaveCachedFile();
+        Editor.SaveCanvas();
         StateHasChanged();
     }
     #endregion

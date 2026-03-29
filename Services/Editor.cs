@@ -12,8 +12,7 @@ public class Editor
 {
     public enum EditorMode
     {
-        Idle,
-        Pan,
+        Idle, Pan,
         CreateTextField,
         CreateMathField
     }
@@ -22,10 +21,10 @@ public class Editor
     private static ILocalStorageService? _localStorage;
     private static IJSRuntime? _js;
     
-    private static JsonSerializerOptions _serializerOptions = new () { WriteIndented = true };
+    private static readonly JsonSerializerOptions SerializerOptions = new () { WriteIndented = true };
     
     
-    #region State Handling
+    #region Editor Mode
     public static event Action? OnStateChanged;
     public static EditorMode Mode
     {
@@ -40,7 +39,7 @@ public class Editor
     public static void SetMode(EditorMode mode) => Mode = mode;
     #endregion
     
-    #region Field Properties
+    #region Fields
     public static List<Field> Fields { get; } = [];
     
     public static event Action? OnFieldClicked;
@@ -48,27 +47,38 @@ public class Editor
     public static int SelectionCount => SelectedFields.Count;
     #endregion
     
+    // Variables
+    public static readonly VariableStore Variables = new();
+    
+    #region Dialog
     public static BaseDialogView? Dialog { get; set; }
     public static event Action<Type, DialogParams?>? OnDialogOpen;
-
-    public static ElementReference FileInput;
     
+    public static ElementReference FileInput;
+    #endregion
+    
+    // Dark Mode
     public static bool IsDark { get; private set; }
     
     
-
     public Editor(Camera cam, IJSRuntime js, ILocalStorageService localStorage)
     {
         _cam = cam;
         _localStorage = localStorage;
         _js = js;
 
-        RetrieveData();
+        LoadSettings();
     }
     
 
     #region Field Factory
 
+    /// <summary>
+    /// Creates a new field on the canvas
+    /// </summary>
+    /// <param name="field">Field to register</param>
+    /// <param name="deselectFields">Deselect all currently selected fields</param>
+    /// <param name="suppressModeSwitch">Stay in current editor mode</param>
     public static void CreateNewField(Field field, bool deselectFields = false, bool suppressModeSwitch = true)
     {
         if (deselectFields) 
@@ -76,9 +86,21 @@ public class Editor
         EditorController.ExecuteAction(new CreateFieldsAction(field, suppressModeSwitch));
     }
 
+    /// <summary>
+    /// Creates new fields on the canvas
+    /// </summary>
+    /// <param name="fields">Fields to register</param>
+    /// <param name="suppressModeSwitch">Stay in current editor mode</param>
+    /// <param name="selectFields">Select created fields</param>
     public static void CreateNewFields(Field[] fields, bool suppressModeSwitch = true, bool selectFields = true) =>
         EditorController.ExecuteAction(new CreateFieldsAction(fields, suppressModeSwitch, selectFields));
     
+    /// <summary>
+    /// Directly registers a field onto the canvas
+    /// </summary>
+    /// <param name="field">Field to register</param>
+    /// <param name="selectField">Select the registered field</param>
+    /// <param name="suppressModeSwitch">Stay in current editor mode</param>
     public static void RegisterField(Field field, bool selectField = true, bool suppressModeSwitch = false)
     {
         Fields.Add(field);
@@ -127,7 +149,7 @@ public class Editor
         SelectedFields.Remove(field);
 
         if (field.IsEditing)
-            SaveCachedFile();
+            SaveCanvas();
         
         field.NotifyFieldDeselected();
     }
@@ -138,7 +160,7 @@ public class Editor
         {
             if (field.IsEditing && !saved)
             {
-                SaveCachedFile();
+                SaveCanvas();
                 saved = true;
             }
             
@@ -203,12 +225,12 @@ public class Editor
         await _js!.InvokeAsync<IJSObjectReference>("window.open", "/", "_blank");
     
     
-    public static async Task ClearGrid()
+    public static async Task ClearCanvas()
     {
         Fields.Clear();
         SelectedFields.Clear();
         
-        SaveCachedFile();
+        SaveCanvas();
         await StoreDataAsync("fileName", "");
         
         await _js!.InvokeVoidAsync("mathEditor.setTitle", "");
@@ -217,7 +239,8 @@ public class Editor
     
     
     #region Editor Save/Load
-    private static async void RetrieveData()
+    /// <summary> Loads saved settings from local storage </summary>
+    private static async void LoadSettings()
     {
         try
         {
@@ -227,7 +250,7 @@ public class Editor
             var file = await _localStorage.GetItemAsync<List<FieldSaveData>>("file");
             if (file is { Count: > 0 })
             {
-                ReadSaveList(file);
+                LoadSaveData(file);
 
                 var fileName = await _localStorage.GetItemAsStringAsync("fileName");
                 if(fileName != null && !string.IsNullOrEmpty(fileName))
@@ -240,16 +263,11 @@ public class Editor
         }
     }
 
-    private static async void StoreData(string key, object value)
+    /// <summary> Saves a setting into local storage </summary>
+    private static async void SaveSetting(string key, object value)
     {
-        try
-        {
-            await StoreDataAsync(key, value);
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-        }
+        try { await StoreDataAsync(key, value); }
+        catch (Exception e) { Console.Error.WriteLine(e); }
     }
     public static async Task StoreDataAsync(string key, object value)
     {
@@ -258,8 +276,9 @@ public class Editor
     }
 
 
-    public static void SaveCachedFile() =>
-        StoreData("file", GetSaveList());
+    /// <summary> Saves the current canvas into local storage </summary>
+    public static void SaveCanvas() =>
+        SaveSetting("file", GetSaveList());
     
     #endregion
     
@@ -268,10 +287,10 @@ public class Editor
     private static List<FieldSaveData> GetSaveList() => 
         Fields.Select(f => f.ToSaveData()).ToList();
 
-    private static void ReadSaveList(List<FieldSaveData> saveList) =>
-        ReadSaveList(saveList, f => RegisterField(f, selectField: false));
+    private static void LoadSaveData(List<FieldSaveData> saveList) =>
+        LoadSaveData(saveList, f => RegisterField(f, selectField: false));
 
-    private static void ReadSaveList(List<FieldSaveData> saveList, Action<Field> callback)
+    private static void LoadSaveData(List<FieldSaveData> saveList, Action<Field> callback)
     {
         foreach (var f in saveList)
         {
@@ -295,13 +314,13 @@ public class Editor
     }
     
     public static string SerializeFields() => 
-        JsonSerializer.Serialize(GetSaveList(), _serializerOptions);
+        JsonSerializer.Serialize(GetSaveList(), SerializerOptions);
     
     public static void DeserializeFields(string json) =>
-        ReadSaveList(JsonSerializer.Deserialize<List<FieldSaveData>>(json)!);
+        LoadSaveData(JsonSerializer.Deserialize<List<FieldSaveData>>(json)!);
     
     
-    public static async Task SaveFile(string fileName)
+    public static async Task SaveToFile(string fileName)
     {
         if (_js == null) return;
         
@@ -312,7 +331,7 @@ public class Editor
             );
 
         await _js.InvokeVoidAsync("mathEditor.setTitle", fileName);
-        StoreData("fileName", fileName);
+        SaveSetting("fileName", fileName);
     }
 
     public static async Task OpenFilePicker()
@@ -321,17 +340,17 @@ public class Editor
         await _js.InvokeVoidAsync("mathEditor.openFilePicker", FileInput);
     }
     
-    public static async Task LoadFile(ChangeEventArgs e)
+    public static async Task LoadFromFile(ChangeEventArgs e)
     {
         if (_js == null) return;
         
-        await ClearGrid();
+        await ClearCanvas();
         
         var fileData = await _js.InvokeAsync<FileData>("mathEditor.readFile", FileInput);
 
         DeserializeFields(fileData.Content);
         
-        SaveCachedFile();
+        SaveCanvas();
         await StoreDataAsync("fileName", fileData.Name);
         await _js.InvokeVoidAsync("mathEditor.setTitle", fileData.Name);
     }
@@ -350,10 +369,9 @@ public class Editor
     
     public static void ShowSaveDialog()
     {
-        var parameters = new DialogParams { ["OnSave"] = SaveFile };
+        var parameters = new DialogParams { ["OnSave"] = SaveToFile };
         ShowDialog(typeof(SaveDialogView), parameters);
     } 
-
     
     #endregion
     
@@ -374,7 +392,6 @@ public class Editor
     }
     
     #endregion
-    
     
     
     [JSInvokable]
@@ -453,13 +470,13 @@ public class Editor
                     break;
                 case "delete":
                     DeleteSelectedFields();
-                    SaveCachedFile();
+                    SaveCanvas();
                     break;
                 case "c":
                     if (ctrl && !editingField)
                     {
                         var fields = SelectedFields.Select(f => f.ToSaveData()).ToList();
-                        var copied = JsonSerializer.Serialize(fields, _serializerOptions);
+                        var copied = JsonSerializer.Serialize(fields, SerializerOptions);
                         await _js!.InvokeVoidAsync("clipBoard.copyToClipboard", copied);
                     }
                     break;
@@ -499,7 +516,7 @@ public class Editor
             var data = JsonSerializer.Deserialize<List<FieldSaveData>>(content);
             List<Field> fields = [];
             if (data != null)
-                ReadSaveList(data, f => fields.Add(f));
+                LoadSaveData(data, f => fields.Add(f));
 
             CreateNewFields(fields.ToArray());
         }
@@ -509,10 +526,7 @@ public class Editor
             field.PosX = center.x - field.Width / 2;
             field.PosY = center.y - field.Height / 2;
         }
-        finally
-        {
-            SaveCachedFile();
-        }
+        finally { SaveCanvas(); }
     }
 
     private static void MoveCam(double posX, double posY) 

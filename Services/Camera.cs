@@ -24,11 +24,15 @@ public class Camera
     public double ScreenHeight { get; set; }
 
 
-    public (double x, double y) GetScreenCenter()
-    {
-        return ScreenToWorld(ScreenWidth / 2, ScreenHeight / 2);
-    }
+    /// <summary> Returns the world coordinates of the screen center </summary>
+    public (double x, double y) GetScreenCenter() => 
+        ScreenToWorld(ScreenWidth / 2, ScreenHeight / 2);
     
+    /// <summary>
+    /// Moves the camera to a given point
+    /// </summary>
+    /// <param name="pos">Position of the destination point</param>
+    /// <param name="teleport">Teleport the camera to the point</param>
     public void MoveToWorldPoint((double x, double y) pos, bool teleport = false)
     {
         var (cx, cy) = GetScreenCenter();
@@ -47,9 +51,11 @@ public class Camera
     }
     
     
+    /// <summary> Converts screen coordinates to world coordinates </summary>
     public (double worldX, double worldY) ScreenToWorld(double screenX, double screenY) 
         => ((screenX - PanX) / Zoom, (screenY - PanY) / Zoom);
 
+    /// <summary> Converts world coordinates to screen coordinates </summary>
     public (double screenX, double screenY) WorldToScreen(double worldX, double worldY)
         => (worldX * Zoom + PanX, worldY * Zoom + PanY);
     

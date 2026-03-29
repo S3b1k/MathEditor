@@ -12,7 +12,7 @@ public static class EditorController
     {
         action.Execute();
         RegisterAction(action);
-        Editor.SaveCachedFile();
+        Editor.SaveCanvas();
     }
 
     public static void RegisterAction(IUndoableAction action)
@@ -30,7 +30,7 @@ public static class EditorController
         var action = UndoStack.Pop();
         action.Undo();
         RedoStack.Push(action);
-        Editor.SaveCachedFile();
+        Editor.SaveCanvas();
     }
 
 
@@ -42,6 +42,6 @@ public static class EditorController
         var action = RedoStack.Pop();
         action.Execute();
         UndoStack.Push(action);
-        Editor.SaveCachedFile();
+        Editor.SaveCanvas();
     }
 }

@@ -38,22 +38,16 @@ public abstract class Field(double x, double y)
     #region Resizing
     public enum ResizeDirection
     {
-        TopLeft,
-        Top,
-        TopRight,
-        Right,
-        BottomRight,
-        Bottom,
-        BottomLeft,
-        Left
+        TopLeft, Top, TopRight,
+        Right, BottomRight, Bottom,
+        BottomLeft, Left
     }
 
     [Flags]
     public enum ResizableAxis
     {
         None = 0,
-        Horizontal = 1,
-        Vertical = 2,
+        Horizontal = 1, Vertical = 2,
         Diagonal = 4,
         All = Horizontal | Vertical | Diagonal
     }
@@ -83,10 +77,20 @@ public abstract class Field(double x, double y)
     public void StopEditing() => OnStopEditing?.Invoke();
     
     
+    /// <summary> Creates a new instance with the same values of this field </summary>
     public abstract Field Clone();
+    /// <summary> Converts the fields into saving data </summary>
     public abstract FieldSaveData ToSaveData();
 
 
+    /// <summary>
+    /// Creates a new field of a given type
+    /// </summary>
+    /// <param name="posX">X position of the new field</param>
+    /// <param name="posY">Y position of the new field</param>
+    /// <param name="suppressModeSwitch">Stay in current editor mode</param>
+    /// <typeparam name="T">Any type of field that should be created</typeparam>
+    /// <returns>Instance of the new field</returns>
     public static T Create<T>(double posX, double posY, bool suppressModeSwitch = false) where T : Field
     {
         var field = (T)Activator.CreateInstance(typeof(T), posX, posY)!;

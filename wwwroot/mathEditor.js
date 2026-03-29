@@ -239,11 +239,38 @@ window.textField = {
 
 window.mathField = {
     registerHandler: function (element, dotnetRef) {
-        element.addEventListener("keydown", (e) => {
+        element.addEventListener("keydown", async (e) => {
+            const val = this.getValue(element);
+
             switch (e.key) {
                 case ':':
                     e.preventDefault();
-                    element.executeCommand(["insert", "\\coloneq"])
+
+                    // Remove subscript numbers from check
+                    const stripped = val.replace(/\_\{[^}]*\}/g, '').replace(/\_\d/g, '');
+                    const hasLeadingNum = /\d/.test(stripped);
+                    
+                    if (!hasLeadingNum)
+                        element.executeCommand(["insert", "\\coloneq"]);
+                    else
+                        element.executeCommand(["insert", ':']);
+                    
+                    break;
+                case '=':
+                    if (val.includes("\\coloneq"))
+                        break;
+                    
+                    e.preventDefault();
+                    element.executeCommand(["insert", "="]);
+                    
+                    const result = await dotnetRef.invokeMethodAsync("EvaluateLatex", val);
+                    if (result !== null)
+                        element.executeCommand(["insert", result]);
+                    break;
+                case '-':
+                    if (val[val.length - 1] === '+')
+                        element.executeCommand(["insert", "(#0)"]);
+                    break;
             }
         });
     },

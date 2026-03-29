@@ -1,12 +1,11 @@
 using MathEditor.Models;
+using MathEditor.Services;
 using Microsoft.JSInterop;
 
 namespace MathEditor.Components.FieldViews;
 
 public partial class MathFieldView : BaseFieldView<MathField>
 {
-    private string _currentLatex;
-    
     #region events
     protected override void OnInitialized()
     {
@@ -79,12 +78,58 @@ public partial class MathFieldView : BaseFieldView<MathField>
     {
         if (!Field.IsEditing)
             return;
-        
-        try { base.StopEditing(await JS.InvokeAsync<string>("mathField.getValue", ContentRef)); }
+
+        try
+        {
+            var val = await JS.InvokeAsync<string>("mathField.getValue", ContentRef);
+            var result = MathParser.Parse(val);
+            var declaredNames = new List<string>();
+
+            foreach (var error in result.Errors)
+                await JS.InvokeVoidAsync("alert", error);
+
+            if (result.Assignment != null)
+            {
+                var (varName, varVal) = result.Assignment;
+                Editor.Variables.Declare(Field.Id, varName, varVal, out var warning);
+                declaredNames.Add(varName);
+
+                if (warning != null)
+                    await JS.InvokeVoidAsync("alert", warning);
+            }
+
+            // if (result.Evaluation != null)
+            // {
+            //     var varName = result.Evaluation.VarName;
+            //     if (Editor.Variables.TryGet(varName, out var varVal))
+            //         await JS.InvokeVoidAsync("alert", $"{varName} = {varVal}");
+            //     else
+            //         await JS.InvokeVoidAsync("alert", $"Variable '{varName}' not found");
+            // }
+
+            Editor.Variables.Reconcile(Field.Id, declaredNames);
+            
+            base.StopEditing(val);
+        }
         catch (Exception e) { Console.Error.WriteLine(e); }
     }
 
     #endregion
+
+
+    [JSInvokable]
+    public string? EvaluateLatex(string latex)
+    {
+        // Append a fake '=' so the parser sees a complete evaluation expression
+        var result = MathParser.Parse(latex + "=");
+
+        if (result.Evaluation == null)
+            return null;
+
+        return Editor.Variables.TryGet(result.Evaluation.VarName, out var val)
+            ? val
+            : null;
+    }
     
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
