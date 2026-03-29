@@ -5,7 +5,7 @@
 
 <div class="toolbar">
         <div class="left">
-                <button class="menu-button @(_showContextMenu ? "visible" : "")" title="Open Menu"
+                <button class="menu-button @(ShowContextMenu ? "visible" : "")" title="Open Menu"
                         @onclick="() => _showContextMenu = !_showContextMenu">
                         <img src="icons/icon_menu.svg" alt="menu-icon"/>
                         <span class="title">MathEditor</span>
@@ -31,9 +31,9 @@
         </div>
 </div>
 
-<div class="menu @(_showContextMenu ? "visible" : "")">
+<div class="menu @(ShowContextMenu ? "visible" : "")">
         <input type="file" accept=".mxe" @ref="Editor.FileInput" style="display:none"
-               @onchange="Editor.LoadFile" />
+               @onchange="Editor.LoadFromFile" />
         
         <button @onclick="_ => Editor.OpenFilePicker()">
                 <img src="icons/icon_open-file.svg" alt="open-file"/>
@@ -46,7 +46,7 @@
                 <span class="shortcut">Ctrl + S</span>
         </button>
         <button @onclick="_ => ToggleTheme()">
-                <img class="theme-toggle-icon @(rotateIcon ? "rotate" : "")" alt="toggle-theme"/>
+                <img class="theme-toggle-icon @(_rotateIcon ? "rotate" : "")" alt="toggle-theme" src=""/>
                 Toggle Theme
         </button>
         <button @onclick="ShowClearCanvasDialog">
@@ -64,24 +64,24 @@
 
 
 @code {
-        private bool _showContextMenu;
+        public bool ShowContextMenu;
         
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
 
-        private bool rotateIcon;
+        private bool _rotateIcon;
         
         private async Task ToggleTheme()
         {
-                if (rotateIcon)
+                if (_rotateIcon)
                         return;
                 
-                rotateIcon = true;
+                _rotateIcon = true;
                 await Editor.ToggleTheme();
 
                 await Task.Delay(700);
                 
-                rotateIcon = false;
+                _rotateIcon = false;
         }
 
         private void ShowClearCanvasDialog()
