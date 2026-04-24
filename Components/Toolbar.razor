@@ -5,8 +5,8 @@
 
 <div class="toolbar">
         <div class="left">
-                <button class="menu-button @(ShowContextMenu ? "visible" : "")" title="Open Menu"
-                        @onclick="() => _showContextMenu = !_showContextMenu">
+                <button class="menu-button @(_showMenu ? "visible" : "")" title="Open Menu"
+                        @onclick="() => _showMenu = !_showMenu">
                         <img src="icons/icon_menu.svg" alt="menu-icon"/>
                         <span class="title">MathEditor</span>
                 </button>  
@@ -31,7 +31,7 @@
         </div>
 </div>
 
-<div class="menu @(ShowContextMenu ? "visible" : "")">
+<div class="menu @(_showMenu ? "visible" : "")">
         <input type="file" accept=".mxe" @ref="Editor.FileInput" style="display:none"
                @onchange="Editor.LoadFromFile" />
         
@@ -64,7 +64,7 @@
 
 
 @code {
-        public bool ShowContextMenu;
+        private bool _showMenu;
         
         protected override void OnInitialized() => Editor.OnStateChanged += StateHasChanged;
         public void Dispose() => Editor.OnStateChanged -= StateHasChanged;
